@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:motora/components/card.dart';
 import 'package:motora/components/fuel_slider.dart';
 import 'package:motora/components/motor_card.dart';
+import 'package:motora/model/work_model.dart';
 import 'package:motora/provider/motor_provider.dart';
 import 'package:motora/screen/home/active_work_session.dart';
 import 'package:motora/utils/api.dart';
@@ -123,7 +124,7 @@ class _StartWorkPageState extends State<StartWorkPage> {
     }
 
     try {
-      await api.post(
+      final res = await api.post(
         '/work/start',
         body: {
           "motorcycle_id": motor.id,
@@ -137,8 +138,8 @@ class _StartWorkPageState extends State<StartWorkPage> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => ActiveWorkPage(
-            platform: selectedPlatform,
-            targetProfit: double.tryParse(profitController.value.text) ?? 0,
+            motor: motor,
+            work: WorkModel.fromJson(res['data']),
           ),
         ),
       );

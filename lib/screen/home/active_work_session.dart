@@ -1,394 +1,586 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:motora/screen/home/finish_work_session.dart';
+import 'package:motora/model/motor_model.dart';
+import 'package:motora/model/work_model.dart';
+import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
 
 class ActiveWorkPage extends StatefulWidget {
-  final String platform;
-  final double targetProfit;
+  final WorkModel work;
+  final MotorModel motor;
 
-  const ActiveWorkPage({
-    super.key,
-    required this.platform,
-    required this.targetProfit,
-  });
+  const ActiveWorkPage({super.key, required this.work, required this.motor});
 
   @override
-  State<ActiveWorkPage> createState() => _ActiveWorkPageState();
+  State<ActiveWorkPage> createState() => _ActiveWorkSessionPageState();
 }
 
-class _ActiveWorkPageState extends State<ActiveWorkPage> {
+class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
   Timer? _timer;
 
   Duration _duration = Duration.zero;
 
-  int _orders = 0;
-  double _income = 0;
-  double _distance = 0;
-  double _fuel = 0;
-
-  final TextEditingController _incomeController = TextEditingController();
-
-  final TextEditingController _fuelController = TextEditingController();
+  double _currentKilometers = 0;
+  late double _fuelLevel;
+  late int _totalOrder;
+  late int _currentIncome;
 
   @override
   void initState() {
     super.initState();
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() {
-          _duration += const Duration(seconds: 1);
-        });
-      }
-    });
+    _fuelLevel = int.parse(widget.work.fuelCondition!.split('%')[0]).toDouble();
+    _totalOrder = widget.work.totalOrder!;
+    _currentIncome = 0;
+
+    _updateDuration();
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _updateDuration(),
+    );
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _incomeController.dispose();
-    _fuelController.dispose();
     super.dispose();
   }
 
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
+  void _updateDuration() {
+    if (!mounted) return;
 
-    return '${hours.toString().padLeft(2, '0')}:'
-        '${minutes.toString().padLeft(2, '0')}:'
-        '${seconds.toString().padLeft(2, '0')}';
+    setState(() {
+      _duration = DateTime.now().difference(
+        DateTime.parse(widget.work.startedAt!),
+      );
+    });
   }
 
-  String _rupiah(double value) {
-    final text = value.round().toString();
-
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < text.length; i++) {
-      if (i > 0 && (text.length - i) % 3 == 0) {
-        buffer.write('.');
-      }
-
-      buffer.write(text[i]);
+  double get _profitProgress {
+    if (widget.work.goalProfit! <= 0) {
+      return 0;
     }
 
-    return 'Rp${buffer.toString()}';
+    return (_currentIncome / widget.work.goalProfit!).clamp(0.0, 1.0);
   }
 
-  double get progress {
-    if (widget.targetProfit <= 0) return 0;
+  String get _durationText {
+    final hours = _duration.inHours.toString().padLeft(2, '0');
 
-    return (_income / widget.targetProfit).clamp(0.0, 1.0);
+    final minutes = (_duration.inMinutes % 60).toString().padLeft(2, '0');
+
+    final seconds = (_duration.inSeconds % 60).toString().padLeft(2, '0');
+
+    return '$hours:$minutes:$seconds';
   }
 
-  double get profitPerHour {
-    final hours = _duration.inSeconds / 3600;
-
-    if (hours <= 0) return 0;
-
-    return _income / hours;
+  String _formatRupiah(int value) {
+    return 'Rp${value.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}';
   }
 
-  void _addOrder() {
-    setState(() {
-      _orders++;
-      _income += 12500;
-      _distance += 4.2;
-    });
+  String _formatKm(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Order berhasil ditambahkan'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    return value.toStringAsFixed(1);
   }
 
-  void _addFuel() {
-    _fuelController.clear();
+  void saveIncome(int amount, double km) async {
+    try {
+      await api.post(
+        '/work/income',
+        body: {
+          "work_session_id": widget.work.id,
+          "income_type": "ORDER",
+          "amount": amount,
+          "distance": km,
+        },
+      );
+
+      setState(() {
+        _currentIncome += amount;
+        _currentKilometers += km;
+        _totalOrder++;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _showAddIncomeSheet() {
+    final formKey = GlobalKey<FormState>();
+    final controller = TextEditingController();
+    final kmController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return _FuelSheet(
-          onSave: (amount) {
-            setState(() {
-              _fuel += amount;
-            });
-          },
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Form(
+          key: formKey,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Tambah Pendapatan',
+                        style: TextStyle(
+                          color: AppColors.dark,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  'Masukkan pendapatan yang kamu dapatkan.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                ),
+
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  textInputAction: TextInputAction.next,
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    prefixText: 'Rp ',
+                    hintText: '0',
+                    filled: true,
+                    fillColor: const Color(0xFFF8F9FA),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.green,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Pendapatan wajib diisi';
+                    }
+
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: kmController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    prefixText: 'KM ',
+                    hintText: '0',
+                    filled: true,
+                    fillColor: const Color(0xFFF8F9FA),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: AppColors.green,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Kilometer wajib diisi';
+                    }
+
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (!formKey.currentState!.validate()) return;
+
+                      final value = int.tryParse(
+                        controller.text.replaceAll('.', '').replaceAll(',', ''),
+                      );
+
+                      if (value == null || value <= 0) {
+                        return;
+                      }
+
+                      saveIncome(value, double.parse(kmController.text));
+
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'Simpan Pendapatan',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  void _finishWork() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => FinishWorkPage(
-          platform: widget.platform,
-          orders: _orders,
-          income: _income,
-          fuel: _fuel,
-          distance: _distance,
-          duration: _formatDuration(_duration),
-        ),
+  void _showFinishConfirmation() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.flag_rounded,
+                    color: AppColors.green,
+                    size: 32,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                const Text(
+                  'Akhiri sesi narik?',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  'Pastikan semua pendapatan dan '
+                  'pengeluaran sudah dicatat.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                          side: const BorderSide(color: AppColors.border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: const Text(
+                          'Batal',
+                          style: TextStyle(
+                            color: AppColors.dark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+
+                          _finishSession();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.green,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        child: const Text(
+                          'Akhiri Sesi',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  void _finishSession() {
+    // TODO:
+    // PUT/PATCH /work-session/${widget.work.sessionId}
+    //
+    // Kirim:
+    // kilometers_finish
+    // status = COMPLETED
+    //
+    // Setelah berhasil:
+    Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9F8),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 9,
-              height: 9,
-              decoration: const BoxDecoration(
-                color: AppColors.green,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Sedang Narik',
-              style: TextStyle(
-                color: AppColors.dark,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: const Color(0xFFF9FAFB),
+
+      appBar: _buildAppBar(),
+
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
-          children: [
-            _buildActiveHeader(),
-
-            const SizedBox(height: 16),
-
-            _buildIncomeCard(),
-
-            const SizedBox(height: 16),
-
-            _buildStats(),
-
-            const SizedBox(height: 16),
-
-            _buildTargetCard(),
-
-            const SizedBox(height: 20),
-
-            _buildQuickActions(),
-
-            const SizedBox(height: 20),
-
-            _buildFinishButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActiveHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.dark,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.green.withOpacity(.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.circle, size: 8, color: AppColors.green),
-                    SizedBox(width: 6),
-                    Text(
-                      'AKTIF',
-                      style: TextStyle(
-                        color: Color(0xFF7EE2A7),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildSessionHeader(widget.motor),
+
+              const SizedBox(height: 18),
+
+              _buildMainCard(),
+
+              const SizedBox(height: 20),
+
+              _buildFinishButton(),
             ],
           ),
-
-          const SizedBox(height: 14),
-
-          Text(
-            widget.platform,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          const Text(
-            'Sesi narik sedang berjalan',
-            style: TextStyle(color: Color(0xFF98A2B3), fontSize: 13),
-          ),
-
-          const SizedBox(height: 22),
-
-          const Text(
-            'DURASI',
-            style: TextStyle(
-              color: Color(0xFF98A2B3),
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-            ),
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            _formatDuration(_duration),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildIncomeCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E9E7)),
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: const Color(0xFFF9FAFB),
+      surfaceTintColor: const Color(0xFFF9FAFB),
+      elevation: 0,
+
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.dark),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'PENDAPATAN SAAT INI',
-            style: TextStyle(
-              color: AppColors.muted,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1,
-            ),
-          ),
 
-          const SizedBox(height: 7),
-
-          Text(
-            _rupiah(_income),
-            style: const TextStyle(
-              color: AppColors.green,
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            '$_orders order selesai',
-            style: const TextStyle(color: AppColors.muted, fontSize: 13),
-          ),
-        ],
+      title: const Text(
+        'Sesi Berjalan',
+        style: TextStyle(
+          color: AppColors.dark,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
       ),
-    );
-  }
 
-  Widget _buildStats() {
-    return Row(
-      children: [
-        Expanded(
-          child: _statCard(Icons.receipt_long_rounded, 'Orders', '$_orders'),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _statCard(
-            Icons.route_rounded,
-            'Jarak',
-            '${_distance.toStringAsFixed(1)} km',
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _statCard(
-            Icons.speed_rounded,
-            'Rp/Jam',
-            _rupiah(profitPerHour),
-          ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.more_horiz_rounded, color: AppColors.dark),
         ),
       ],
     );
   }
 
-  Widget _statCard(IconData icon, String title, String value) {
+  Widget _buildSessionHeader(MotorModel motor) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xFFE5E9E7)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.green, size: 21),
-
-          const SizedBox(height: 10),
-
-          Text(
-            title,
-            style: const TextStyle(color: AppColors.muted, fontSize: 11),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: AppColors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'SEDANG NARIK',
+                  style: TextStyle(
+                    color: AppColors.green,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 3),
+          const SizedBox(height: 12),
 
           Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            _durationText,
             style: const TextStyle(
               color: AppColors.dark,
-              fontSize: 14,
+              fontSize: 38,
               fontWeight: FontWeight.w800,
+              letterSpacing: -1.5,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.two_wheeler_rounded,
+                size: 17,
+                color: AppColors.muted,
+              ),
+
+              const SizedBox(width: 6),
+
+              Text(
+                "${motor.brand} ${motor.model}",
+                style: const TextStyle(
+                  color: AppColors.dark,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Container(
+                width: 3,
+                height: 3,
+                decoration: const BoxDecoration(
+                  color: AppColors.muted,
+                  shape: BoxShape.circle,
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Text(
+                "${widget.work.platform}",
+                style: const TextStyle(
+                  color: AppColors.green,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            "${motor.policeNumber}",
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.4,
             ),
           ),
         ],
@@ -396,16 +588,16 @@ class _ActiveWorkPageState extends State<ActiveWorkPage> {
     );
   }
 
-  Widget _buildTargetCard() {
-    final percentage = (progress * 100).round();
-    final targetReached = _income >= widget.targetProfit;
+  Widget _buildMainCard() {
+    final percentage = (_profitProgress * 100).round();
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E9E7)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,101 +606,100 @@ class _ActiveWorkPageState extends State<ActiveWorkPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Target Profit',
+                'PROFIT HARI INI',
                 style: TextStyle(
-                  color: AppColors.dark,
-                  fontSize: 14,
+                  color: AppColors.muted,
+                  fontSize: 10,
                   fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
                 ),
               ),
+
               Text(
                 '$percentage%',
                 style: const TextStyle(
                   color: AppColors.green,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 9,
-              backgroundColor: const Color(0xFFE8ECEA),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.green),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _rupiah(_income),
-                style: const TextStyle(
-                  color: AppColors.green,
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              Text(
-                'Target ${_rupiah(widget.targetProfit)}',
-                style: const TextStyle(color: AppColors.muted, fontSize: 12),
-              ),
             ],
           ),
 
-          if (targetReached) ...[
-            const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1F4E8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.green,
-                    size: 18,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Target profit sudah tercapai!',
-                    style: TextStyle(
-                      color: AppColors.green,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
+          Text(
+            _formatRupiah(_currentIncome),
+            style: const TextStyle(
+              color: AppColors.dark,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.8,
             ),
-          ],
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            'Target ${_formatRupiah(widget.work.goalProfit!)}',
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: LinearProgressIndicator(
+              value: _profitProgress,
+              minHeight: 8,
+              backgroundColor: const Color(0xFFEFF1F3),
+              valueColor: const AlwaysStoppedAnimation(AppColors.green),
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          _buildStats(),
+
+          SizedBox(height: 20),
+
+          _buildQuickActions(),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildStats() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(
-            color: AppColors.dark,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.account_tree_outlined,
+                value: '$_totalOrder',
+                label: 'Order',
+                iconColor: const Color(0xFF4CAF50),
+                backgroundColor: const Color(0xFFF0FAF3),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: _buildStatCard(
+                icon: Icons.access_time_rounded,
+                value: _formatRupiah(38000),
+                label: 'Bensin',
+                iconColor: const Color(0xFFFF8A4C),
+                backgroundColor: const Color(0xFFFFF5EF),
+              ),
+            ),
+          ],
         ),
 
         const SizedBox(height: 10),
@@ -516,18 +707,24 @@ class _ActiveWorkPageState extends State<ActiveWorkPage> {
         Row(
           children: [
             Expanded(
-              child: _actionButton(
-                icon: Icons.add_rounded,
-                title: 'Tambah Order',
-                onTap: _addOrder,
+              child: _buildStatCard(
+                icon: Icons.local_gas_station_outlined,
+                value: _formatRupiah(5000),
+                label: 'Pengeluaran',
+                iconColor: const Color(0xFF4285F4),
+                backgroundColor: const Color(0xFFF1F6FF),
               ),
             ),
+
             const SizedBox(width: 10),
+
             Expanded(
-              child: _actionButton(
-                icon: Icons.local_gas_station_rounded,
-                title: 'Catat Bensin',
-                onTap: _addFuel,
+              child: _buildStatCard(
+                icon: Icons.local_shipping_outlined,
+                value: '${_formatKm(_currentKilometers)} km',
+                label: 'Jarak',
+                iconColor: const Color(0xFF8B5CF6),
+                backgroundColor: const Color(0xFFF6F0FF),
               ),
             ),
           ],
@@ -536,175 +733,274 @@ class _ActiveWorkPageState extends State<ActiveWorkPage> {
     );
   }
 
-  Widget _actionButton({
+  Widget _buildStatCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color iconColor,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      height: 104,
+      padding: const EdgeInsets.fromLTRB(16, 13, 16, 12),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 21, color: iconColor),
+
+          const Spacer(),
+
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: AppColors.dark,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
+
+          const SizedBox(height: 2),
+
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildQuickAction(
+            icon: Icons.add_card_rounded,
+            title: 'Pendapatan',
+            onTap: _showAddIncomeSheet,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: _buildQuickAction(
+            icon: Icons.local_gas_station_rounded,
+            title: 'Bensin',
+            onTap: () {
+              _showFuelSheet();
+            },
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: _buildQuickAction(
+            icon: Icons.payments_rounded,
+            title: 'Pengeluaran',
+            onTap: () {
+              // TODO: expense sheet
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAction({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFE1E6E3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
           children: [
-            Icon(icon, color: AppColors.green, size: 21),
-            const SizedBox(width: 7),
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.dark, size: 20),
+            ),
+
+            const SizedBox(height: 7),
+
             Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: AppColors.dark,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+                color: AppColors.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showFuelSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        double temporaryFuel = _fuelLevel;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Update Bensin',
+                      style: TextStyle(
+                        color: AppColors.dark,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      'Sesuaikan kondisi bensin motor saat ini.',
+                      style: TextStyle(color: AppColors.muted, fontSize: 13),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Center(
+                      child: Text(
+                        '${temporaryFuel.round()}%',
+                        style: const TextStyle(
+                          color: AppColors.green,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: AppColors.green,
+                        thumbColor: AppColors.green,
+                        trackHeight: 8,
+                      ),
+                      child: Slider(
+                        value: temporaryFuel,
+                        min: 0,
+                        max: 100,
+                        divisions: 20,
+                        onChanged: (value) {
+                          setSheetState(() {
+                            temporaryFuel = value;
+                          });
+                        },
+                      ),
+                    ),
+
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'E',
+                          style: TextStyle(
+                            color: AppColors.muted,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'F',
+                          style: TextStyle(
+                            color: AppColors.muted,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _fuelLevel = temporaryFuel;
+                          });
+
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.green,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Simpan',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
   Widget _buildFinishButton() {
     return SizedBox(
-      height: 56,
+      width: double.infinity,
+      height: 54,
       child: ElevatedButton.icon(
-        onPressed: _finishWork,
-        icon: const Icon(Icons.stop_circle_outlined, size: 22),
+        onPressed: _showFinishConfirmation,
+        icon: const Icon(Icons.stop_circle_outlined, size: 21),
         label: const Text(
-          'Selesaikan Sesi',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          'Akhiri Sesi Narik',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFE45555),
+          backgroundColor: AppColors.dark,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FuelSheet extends StatefulWidget {
-  final ValueChanged<double> onSave;
-
-  const _FuelSheet({required this.onSave});
-
-  @override
-  State<_FuelSheet> createState() => _FuelSheetState();
-}
-
-class _FuelSheetState extends State<_FuelSheet> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    final amount = double.tryParse(_controller.text) ?? 0;
-
-    if (amount <= 0) return;
-
-    widget.onSave(amount);
-    Navigator.of(context).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD8DDE1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            const Text(
-              'Catat Bensin',
-              style: TextStyle(
-                color: AppColors.dark,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            const Text(
-              'Masukkan biaya bensin sesi ini.',
-              style: TextStyle(color: AppColors.muted, fontSize: 13),
-            ),
-
-            const SizedBox(height: 18),
-
-            TextField(
-              controller: _controller,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Biaya bensin',
-                prefixText: 'Rp ',
-                filled: true,
-                fillColor: const Color(0xFFF8FAF9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(13),
-                  borderSide: const BorderSide(color: Color(0xFFE0E5E2)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text(
-                  'Simpan',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

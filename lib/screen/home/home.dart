@@ -114,10 +114,7 @@ class _HomePageState extends State<HomePage> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ActiveWorkPage(
-            platform: snapshot.data!.platform!,
-            targetProfit: snapshot.data!.goalProfit!.toDouble(),
-          ),
+          builder: (_) => ActiveWorkPage(work: snapshot.data!, motor: motor!),
         ),
       ),
 
