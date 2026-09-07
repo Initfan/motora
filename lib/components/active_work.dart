@@ -1,7 +1,103 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:motora/model/motor_model.dart';
+import 'package:motora/model/work_model.dart';
+import 'package:motora/screen/home/active_work_session.dart';
+import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
+
+class ActiveWorkSession extends StatefulWidget {
+  const ActiveWorkSession({super.key, required this.data});
+
+  final WorkModel data;
+
+  @override
+  State<ActiveWorkSession> createState() => _ActiveWorkSessionState();
+}
+
+class _ActiveWorkSessionState extends State<ActiveWorkSession> {
+  late Future<MotorModel>? futureMotor;
+  double distance = 0;
+  int totalOrder = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    futureMotor = getMotor();
+  }
+
+  Future<MotorModel> getMotor() async {
+    try {
+      final incomes = await api.get(
+        '/work/${widget.data.motorcycleId}/incomes',
+      );
+      final data = incomes['data'] as List<dynamic>;
+
+      for (var e in data) {
+        setState(() {
+          distance += e['distance'];
+          totalOrder = data.length;
+        });
+      }
+
+      final res = await api.get('/motorcycle/${widget.data.motorcycleId}');
+      return MotorModel.fromJson(res['data']);
+    } catch (e) {
+      print(e);
+    }
+    return MotorModel();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<MotorModel>(
+      future: futureMotor,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.muted,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+          );
+        }
+        return ActiveWorkSessionCard(
+          platform: widget.data.platform!,
+          image: "${dotenv.env['IMAGE_URL']}/${snapshot.data?.motorUrl}",
+          motorcycleName: "${snapshot.data?.brand} ${snapshot.data?.model}",
+          kilometersStart: widget.data.kilometersStart!.toDouble(),
+          currentKilometers: widget.data.kilometersFinish!.toDouble(),
+          targetProfit: widget.data.goalProfit!,
+          totalOrder: totalOrder,
+          distance: distance,
+          startedAt: DateTime.parse(widget.data.startedAt!),
+
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  ActiveWorkPage(work: widget.data, motor: snapshot.data!),
+            ),
+          ),
+
+          onFinish: () {
+            // Buka halaman Akhiri Sesi
+          },
+        );
+      },
+    );
+  }
+}
 
 class ActiveWorkSessionCard extends StatefulWidget {
   final String platform;
@@ -12,6 +108,7 @@ class ActiveWorkSessionCard extends StatefulWidget {
   final int totalOrder;
   final DateTime startedAt;
   final String image;
+  final double distance;
 
   final VoidCallback? onTap;
   final VoidCallback? onFinish;
@@ -28,6 +125,7 @@ class ActiveWorkSessionCard extends StatefulWidget {
     this.onTap,
     this.onFinish,
     this.image = '',
+    required this.distance,
   });
 
   @override
@@ -62,13 +160,6 @@ class _ActiveWorkSessionCardState extends State<ActiveWorkSessionCard> {
     setState(() {
       _duration = DateTime.now().difference(widget.startedAt);
     });
-  }
-
-  double get _distance {
-    return (widget.currentKilometers - widget.kilometersStart).clamp(
-      0,
-      double.infinity,
-    );
   }
 
   String get _durationText {
@@ -205,7 +296,7 @@ class _ActiveWorkSessionCardState extends State<ActiveWorkSessionCard> {
                 const SizedBox(height: 4),
 
                 Text(
-                  '${_formatKm(widget.currentKilometers)} km',
+                  '${_formatKm(widget.kilometersStart)} km',
                   style: const TextStyle(
                     color: AppColors.muted,
                     fontSize: 12,
@@ -256,7 +347,7 @@ class _ActiveWorkSessionCardState extends State<ActiveWorkSessionCard> {
             child: _buildStat(
               icon: Icons.route_rounded,
               label: 'Jarak',
-              value: '${_formatKm(_distance)} km',
+              value: '${_formatKm(widget.distance)} km',
             ),
           ),
 
