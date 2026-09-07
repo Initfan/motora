@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:motora/components/card.dart';
+import 'package:motora/components/fuel_slider.dart';
 import 'package:motora/components/motor_card.dart';
+import 'package:motora/provider/motor_provider.dart';
 import 'package:motora/screen/home/active_work_session.dart';
+import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:provider/provider.dart';
 
 class StartWorkPage extends StatefulWidget {
   const StartWorkPage({super.key});
@@ -16,6 +20,7 @@ class _StartWorkPageState extends State<StartWorkPage> {
   String selectedPlatform = 'GrabFood';
 
   final TextEditingController profitController = TextEditingController();
+  double fuelLevel = 0;
 
   final FocusNode profitFocusNode = FocusNode();
 
@@ -103,8 +108,10 @@ class _StartWorkPageState extends State<StartWorkPage> {
     }
   }
 
-  void _startSession() {
-    if (targetProfit <= 0) {
+  void _startSession() async {
+    final motor = Provider.of<MotorProvider>(context, listen: false).motor;
+
+    if (targetProfit <= 0 || motor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Masukkan target profit terlebih dahulu.'),
@@ -115,14 +122,29 @@ class _StartWorkPageState extends State<StartWorkPage> {
       return;
     }
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ActiveWorkPage(
-          platform: selectedPlatform,
-          targetProfit: double.tryParse(profitController.value.text) ?? 0,
+    try {
+      await api.post(
+        '/work/start',
+        body: {
+          "motorcycle_id": motor.id,
+          "kilometers_start": motor.kilometers,
+          "platform": selectedPlatform,
+          "goal_profit": targetProfit,
+          "fuel_condition": "${fuelLevel.ceil()}%",
+        },
+      );
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ActiveWorkPage(
+            platform: selectedPlatform,
+            targetProfit: double.tryParse(profitController.value.text) ?? 0,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -152,6 +174,17 @@ class _StartWorkPageState extends State<StartWorkPage> {
                     _PlatformCard(
                       selectedPlatform: selectedPlatform,
                       onTap: _showPlatformPicker,
+                    ),
+
+                    const SizedBox(height: 13),
+
+                    CardMotora(
+                      child: FuelLevelSlider(
+                        value: fuelLevel,
+                        onChanged: (level) {
+                          setState(() => fuelLevel = level);
+                        },
+                      ),
                     ),
 
                     const SizedBox(height: 13),
