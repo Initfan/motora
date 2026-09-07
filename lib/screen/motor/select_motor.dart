@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:motora/components/motor_card.dart';
 import 'package:motora/model/motor_model.dart';
+import 'package:motora/provider/motor_provider.dart';
+import 'package:motora/screen/motor/add_motorcycle.dart';
 import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:provider/provider.dart';
 
 class SelectMotorPage extends StatefulWidget {
   const SelectMotorPage({super.key});
@@ -11,53 +15,33 @@ class SelectMotorPage extends StatefulWidget {
 }
 
 class _SelectMotorPageState extends State<SelectMotorPage> {
-  List<MotorModel> _motorcycles = [];
-
-  MotorModel? _selectedMotorcycle;
-
-  bool _isLoading = true;
-  bool _isSelecting = false;
-  String? _errorMessage;
+  late Future<List<MotorModel>> futureListMotor;
 
   @override
   void initState() {
     super.initState();
-    _loadMotorcycles();
+    futureListMotor = loadMotorcycles();
   }
 
-  Future<void> _loadMotorcycles() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  MotorModel? _selectedMotorcycle;
 
+  final bool _isSelecting = false;
+  String? _errorMessage;
+
+  Future<List<MotorModel>> loadMotorcycles() async {
     try {
       final response = await api.get('/motorcycle/user');
 
       final motorcycles = _parseMotorcycles(response);
 
-      if (!mounted) return;
-
-      setState(() {
-        _motorcycles = motorcycles;
-
-        if (motorcycles.length == 1) {
-          _selectedMotorcycle = motorcycles.first;
-        }
-      });
+      return motorcycles;
     } catch (e) {
-      if (!mounted) return;
-
       setState(() {
         _errorMessage = _getErrorMessage(e);
       });
-    } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
     }
+
+    return [];
   }
 
   List<MotorModel> _parseMotorcycles(dynamic response) {
@@ -101,26 +85,15 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
       return;
     }
 
-    setState(() {
-      _isSelecting = true;
-    });
+    Provider.of<MotorProvider>(context, listen: false).setMotor(motorcycle);
 
-    if (!mounted) return;
-
-    setState(() {
-      _isSelecting = false;
-    });
-
-    Navigator.pop(context, motorcycle);
+    Navigator.pop(context);
   }
 
-  Future<void> _addMotorcycle() async {
-    final result = await Navigator.pushNamed(context, '/motorcycle/add');
-
-    if (result == true && mounted) {
-      await _loadMotorcycles();
-    }
-  }
+  void _addMotorcycle() => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => AddMotorcyclePage()),
+  );
 
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -144,105 +117,74 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      appBar: _buildAppBar(),
+      // appBar: _buildAppbar(),
+      body: SafeArea(
+        child: FutureBuilder<List<MotorModel>>(
+          future: futureListMotor,
+          builder: (context, snapshot) {
+            if (_errorMessage != null) {
+              return _buildError();
+            }
 
-      body: SafeArea(child: _buildBody()),
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasData) {
+                return _buildListMotor(snapshot);
+              }
+              return _buildEmpty();
+            }
+            return _buildLoading();
+          },
+        ),
+      ),
 
       bottomNavigationBar: _buildBottomAction(),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
-      elevation: 0,
-
-      leading: IconButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.dark),
-      ),
-
-      title: const Text(
-        'Pilih Motor',
-        style: TextStyle(
-          color: AppColors.dark,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.2,
-        ),
-      ),
-
-      centerTitle: false,
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return _buildLoading();
-    }
-
-    if (_errorMessage != null) {
-      return _buildError();
-    }
-
-    if (_motorcycles.isEmpty) {
-      return _buildEmpty();
-    }
-
-    return RefreshIndicator(
-      color: AppColors.green,
-      onRefresh: _loadMotorcycles,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          _buildHeader(),
-
-          const SizedBox(height: 24),
-
-          ..._motorcycles.map(
-            (motorcycle) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildMotorcycleCard(motorcycle),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          _buildAddMotorButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  ListView _buildListMotor(AsyncSnapshot<List<MotorModel>> snapshot) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
-        const Text(
-          'Gunakan motor yang akan\ndipakai hari ini.',
-          style: TextStyle(
-            color: AppColors.dark,
-            fontSize: 26,
-            height: 1.2,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.7,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gunakan motor yang akan\ndipakai hari ini.',
+              style: TextStyle(
+                color: AppColors.dark,
+                fontSize: 26,
+                height: 1.2,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.7,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              '${snapshot.data!.length} motor terdaftar',
+              style: const TextStyle(
+                color: AppColors.muted,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        ...snapshot.data!.map(
+          (motorcycle) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildMotorcycleCard(motorcycle),
           ),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
-        Text(
-          '${_motorcycles.length} motor terdaftar',
-          style: const TextStyle(
-            color: AppColors.muted,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        _buildAddMotorButton(),
       ],
     );
   }
@@ -258,11 +200,8 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
 
-        padding: const EdgeInsets.all(14),
-
+        padding: const EdgeInsets.all(1.5),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 245, 232, 232),
-
           borderRadius: BorderRadius.circular(18),
 
           border: Border.all(
@@ -281,170 +220,8 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
               : null,
         ),
 
-        child: Row(
-          children: [
-            _buildMotorcycleImage(motorcycle),
-
-            const SizedBox(width: 14),
-
-            Expanded(child: _buildMotorcycleInfo(motorcycle)),
-
-            const SizedBox(width: 10),
-
-            _buildSelectionIndicator(isSelected),
-          ],
-        ),
+        child: Motor(data: motorcycle),
       ),
-    );
-  }
-
-  Widget _buildMotorcycleImage(MotorModel motorcycle) {
-    final photo = motorcycle.motor_url;
-
-    return Container(
-      width: 76,
-      height: 76,
-
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(14),
-      ),
-
-      clipBehavior: Clip.antiAlias,
-
-      child: photo != null && photo.isNotEmpty
-          ? Image.network(
-              photo,
-              fit: BoxFit.cover,
-
-              errorBuilder: (context, error, stackTrace) {
-                return _buildMotorPlaceholder();
-              },
-
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-
-                return const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.green,
-                    ),
-                  ),
-                );
-              },
-            )
-          : _buildMotorPlaceholder(),
-    );
-  }
-
-  Widget _buildMotorPlaceholder() {
-    return const Center(
-      child: Icon(
-        Icons.two_wheeler_rounded,
-        size: 36,
-        color: Color(0xFF98A2B3),
-      ),
-    );
-  }
-
-  Widget _buildMotorcycleInfo(MotorModel motorcycle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${motorcycle.brand} ${motorcycle.model}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.dark,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.2,
-          ),
-        ),
-
-        const SizedBox(height: 5),
-
-        Text(
-          "${motorcycle.policeNumber}",
-          style: const TextStyle(
-            color: AppColors.muted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-          ),
-        ),
-
-        const SizedBox(height: 9),
-
-        Row(
-          children: [
-            const Icon(Icons.speed_rounded, size: 15, color: AppColors.muted),
-
-            const SizedBox(width: 4),
-
-            Text(
-              '${_formatNumber(motorcycle.kilometers ?? 0)} km',
-              style: const TextStyle(
-                color: AppColors.muted,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            Container(
-              width: 3,
-              height: 3,
-              decoration: const BoxDecoration(
-                color: AppColors.border,
-                shape: BoxShape.circle,
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            Text(
-              "${motorcycle.transmission}",
-              style: const TextStyle(
-                color: AppColors.muted,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSelectionIndicator(bool isSelected) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-
-      width: 24,
-      height: 24,
-
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-
-        color: isSelected ? AppColors.green : Colors.white,
-
-        border: Border.all(
-          color: isSelected ? AppColors.green : const Color(0xFFD0D5DD),
-          width: 1.5,
-        ),
-      ),
-
-      child: isSelected
-          ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-          : null,
     );
   }
 
@@ -469,10 +246,6 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
   }
 
   Widget _buildBottomAction() {
-    if (_isLoading || _errorMessage != null || _motorcycles.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     final canContinue = _selectedMotorcycle != null;
 
     return Container(
@@ -617,7 +390,7 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: _loadMotorcycles,
+              onPressed: () => setState(() => _errorMessage = null),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.green,
                 foregroundColor: Colors.white,
@@ -712,15 +485,6 @@ class _SelectMotorPageState extends State<SelectMotorPage> {
           ],
         ),
       ),
-    );
-  }
-
-  String _formatNumber(int number) {
-    final value = number.toString();
-
-    return value.replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
     );
   }
 }

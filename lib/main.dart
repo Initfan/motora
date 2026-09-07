@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:motora/components/motora.dart';
+import 'package:motora/provider/motor_provider.dart';
 import 'package:motora/screen/splash.dart';
 import 'package:motora/utils/token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MotorProvider(),
+      child: const MotoraApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MotoraApp extends StatelessWidget {
+  const MotoraApp({super.key});
 
   @override
   Widget build(BuildContext context) {

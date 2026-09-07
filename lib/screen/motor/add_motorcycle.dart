@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:motora/components/motora.dart';
 import 'package:motora/utils/api.dart';
 
 class AddMotorcyclePage extends StatefulWidget {
@@ -152,10 +151,12 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
         ),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => Motora()),
-      );
+      Navigator.pop(context);
+
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(builder: (_) => Motora()),
+      // );
     } catch (e) {
       if (!mounted) return;
 
@@ -324,6 +325,7 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
                       const SizedBox(height: 24),
 
                       TextFormField(
+                        textInputAction: TextInputAction.next,
                         controller: _brandController,
 
                         textCapitalization: TextCapitalization.words,
@@ -345,6 +347,7 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
                       const SizedBox(height: 16),
 
                       TextFormField(
+                        textInputAction: TextInputAction.next,
                         controller: _modelController,
 
                         textCapitalization: TextCapitalization.words,
@@ -366,6 +369,7 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
                       const SizedBox(height: 16),
 
                       TextFormField(
+                        textInputAction: TextInputAction.next,
                         controller: _yearController,
 
                         keyboardType: TextInputType.number,
@@ -398,39 +402,8 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
 
                       const SizedBox(height: 16),
 
-                      DropdownButtonFormField<String>(
-                        value: _transmission,
-
-                        decoration: _inputDecoration(label: 'Transmisi'),
-
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF667085),
-                        ),
-
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'MATIC',
-                            child: Text('Matic'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'MANUAL',
-                            child: Text('Manual'),
-                          ),
-                        ],
-
-                        onChanged: (value) {
-                          if (value == null) return;
-
-                          setState(() {
-                            _transmission = value;
-                          });
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-
                       TextFormField(
+                        textInputAction: TextInputAction.next,
                         controller: _policeNumberController,
 
                         textCapitalization: TextCapitalization.characters,
@@ -457,6 +430,7 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
                       const SizedBox(height: 16),
 
                       TextFormField(
+                        textInputAction: TextInputAction.done,
                         controller: _kilometersController,
 
                         keyboardType: TextInputType.number,
@@ -494,6 +468,38 @@ class _AddMotorcyclePageState extends State<AddMotorcyclePage> {
                           }
 
                           return null;
+                        },
+                      ),
+
+                      SizedBox(height: 16),
+
+                      DropdownButtonFormField<String>(
+                        value: _transmission,
+
+                        decoration: _inputDecoration(label: 'Transmisi'),
+
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Color(0xFF667085),
+                        ),
+
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'MATIC',
+                            child: Text('Matic'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'MANUAL',
+                            child: Text('Manual'),
+                          ),
+                        ],
+
+                        onChanged: (value) {
+                          if (value == null) return;
+
+                          setState(() {
+                            _transmission = value;
+                          });
                         },
                       ),
                     ],

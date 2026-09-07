@@ -90,6 +90,8 @@ class ApiClient {
       return body;
     }
 
+    print(response.body);
+
     String message = 'Terjadi kesalahan pada server';
 
     if (body is Map<String, dynamic>) {

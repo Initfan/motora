@@ -1,7 +1,7 @@
 class MotorModel {
   int? id;
   String? brand;
-  String? motor_url;
+  String? motorUrl;
   String? model;
   String? year;
   String? transmission;
@@ -15,7 +15,7 @@ class MotorModel {
   MotorModel({
     this.id,
     this.brand,
-    this.motor_url,
+    this.motorUrl,
     this.model,
     this.year,
     this.transmission,
@@ -30,7 +30,7 @@ class MotorModel {
   MotorModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     brand = json['brand'];
-    motor_url = json['motor_url'];
+    motorUrl = json['motor_url'];
     model = json['model'];
     year = json['year'];
     transmission = json['transmission'];
@@ -46,7 +46,7 @@ class MotorModel {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['brand'] = this.brand;
-    data['motor_url'] = this.motor_url;
+    data['motor_url'] = this.motorUrl;
     data['model'] = this.model;
     data['year'] = this.year;
     data['transmission'] = this.transmission;
