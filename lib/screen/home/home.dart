@@ -1,10 +1,18 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:motora/components/active_work.dart';
 import 'package:motora/components/card.dart';
 import 'package:motora/components/motor_card.dart';
 import 'package:motora/components/motor_health.dart';
+import 'package:motora/model/motor_model.dart';
+import 'package:motora/model/work_model.dart';
+import 'package:motora/provider/motor_provider.dart';
+import 'package:motora/screen/home/active_work_session.dart';
 import 'package:motora/screen/home/start_work_session.dart';
+import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +22,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late Future<WorkModel> futureSession;
+
+  @override
+  void initState() {
+    super.initState();
+    futureSession = getActiveSession();
+  }
+
+  Future<WorkModel> getActiveSession() async {
+    final res = await api.get('/work');
+    return WorkModel.fromJson(res['data']);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,20 +54,32 @@ class _HomePageState extends State<HomePage> {
                       horizontal,
                       14,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        header(),
-                        const SizedBox(height: 22),
-                        MotorCard(),
-                        const SizedBox(height: 18),
-                        MotorHealth(),
-                        const SizedBox(height: 18),
-                        const _AttentionCard(),
-                        const SizedBox(height: 18),
-                        const _TargetCard(),
-                        const SizedBox(height: 4),
-                      ],
+                    child: FutureBuilder<WorkModel>(
+                      future: futureSession,
+                      builder: (context, snapshot) {
+                        final motor = Provider.of<MotorProvider>(
+                          context,
+                          listen: false,
+                        ).motor;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            header(),
+                            const SizedBox(height: 22),
+                            snapshot.hasData
+                                ? _buildActiveSession(snapshot, motor)
+                                : MotorCard(),
+                            const SizedBox(height: 18),
+                            MotorHealth(),
+                            const SizedBox(height: 18),
+                            const _AttentionCard(),
+                            const SizedBox(height: 18),
+                            snapshot.hasData ? SizedBox() : _TargetCard(),
+                            const SizedBox(height: 4),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -55,6 +88,42 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
+    );
+  }
+
+  ActiveWorkSessionCard _buildActiveSession(
+    AsyncSnapshot<WorkModel> snapshot,
+    MotorModel? motor,
+  ) {
+    return ActiveWorkSessionCard(
+      platform: snapshot.data!.platform!,
+      image: "${dotenv.env['IMAGE_URL']}/${motor?.motorUrl}",
+      motorcycleName: "${motor?.brand} ${motor?.model}",
+      kilometersStart: snapshot.data!.kilometersStart!.toDouble(),
+      currentKilometers: snapshot.data!.kilometersFinish!.toDouble(),
+      targetProfit: snapshot.data!.goalProfit!,
+      totalOrder: snapshot.data!.totalOrder!,
+      startedAt: DateTime.now().subtract(
+        Duration(
+          hours: DateTime.parse(snapshot.data!.startedAt!).hour,
+          minutes: DateTime.parse(snapshot.data!.startedAt!).minute,
+          seconds: DateTime.parse(snapshot.data!.startedAt!).second,
+        ),
+      ),
+
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ActiveWorkPage(
+            platform: snapshot.data!.platform!,
+            targetProfit: snapshot.data!.goalProfit!.toDouble(),
+          ),
+        ),
+      ),
+
+      onFinish: () {
+        // Buka halaman Akhiri Sesi
+      },
     );
   }
 
