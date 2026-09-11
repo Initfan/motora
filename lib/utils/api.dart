@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:motora/utils/token_storage.dart';
 
@@ -304,6 +305,6 @@ class ApiClient {
 }
 
 final api = ApiClient(
-  baseUrl: "https://2e22-103-30-193-55.ngrok-free.app/api",
+  baseUrl: "${dotenv.env['MOTORA_API']}",
   tokenStorage: TokenStorage(),
 );

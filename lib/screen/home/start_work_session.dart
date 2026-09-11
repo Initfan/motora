@@ -140,6 +140,9 @@ class _StartWorkPageState extends State<StartWorkPage> {
           builder: (_) => ActiveWorkPage(
             motor: motor,
             work: WorkModel.fromJson(res['data']),
+            distance: 0,
+            income: 0,
+            totalOrder: 0,
           ),
         ),
       );

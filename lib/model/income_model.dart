@@ -21,7 +21,7 @@ class IncomeModel {
     id = json['id'];
     incomeType = json['income_type'];
     amount = json['amount'];
-    distance = json['distance'];
+    distance = (json['distance'] as num?)?.toDouble();
     description = json['description'];
     createdAt = json['created_at'];
     workSessionId = json['work_session_id'];

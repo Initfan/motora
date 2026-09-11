@@ -21,6 +21,7 @@ class _ActiveWorkSessionState extends State<ActiveWorkSession> {
   late Future<MotorModel>? futureMotor;
   double distance = 0;
   int totalOrder = 0;
+  int income = 0;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _ActiveWorkSessionState extends State<ActiveWorkSession> {
         setState(() {
           distance += e['distance'];
           totalOrder = data.length;
+          income += e['amount'] as int;
         });
       }
 
@@ -85,8 +87,13 @@ class _ActiveWorkSessionState extends State<ActiveWorkSession> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-                  ActiveWorkPage(work: widget.data, motor: snapshot.data!),
+              builder: (_) => ActiveWorkPage(
+                work: widget.data,
+                motor: snapshot.data!,
+                distance: distance,
+                income: income,
+                totalOrder: totalOrder,
+              ),
             ),
           ),
 

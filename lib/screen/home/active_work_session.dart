@@ -3,14 +3,25 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:motora/model/motor_model.dart';
 import 'package:motora/model/work_model.dart';
+import 'package:motora/screen/home/finish_work_session.dart';
 import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
 
 class ActiveWorkPage extends StatefulWidget {
   final WorkModel work;
   final MotorModel motor;
+  final double distance;
+  final int totalOrder;
+  final int income;
 
-  const ActiveWorkPage({super.key, required this.work, required this.motor});
+  const ActiveWorkPage({
+    super.key,
+    required this.work,
+    required this.motor,
+    required this.distance,
+    required this.totalOrder,
+    required this.income,
+  });
 
   @override
   State<ActiveWorkPage> createState() => _ActiveWorkSessionPageState();
@@ -21,18 +32,16 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
 
   Duration _duration = Duration.zero;
 
-  double _currentKilometers = 0;
   late double _fuelLevel;
-  late int _totalOrder;
-  late int _currentIncome;
+  late double _distance = widget.distance;
+  late int _totalOrder = widget.totalOrder;
+  late int _currentIncome = widget.income;
 
   @override
   void initState() {
     super.initState();
 
     _fuelLevel = int.parse(widget.work.fuelCondition!.split('%')[0]).toDouble();
-    _totalOrder = widget.work.totalOrder!;
-    _currentIncome = 0;
 
     _updateDuration();
 
@@ -102,7 +111,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
 
       setState(() {
         _currentIncome += amount;
-        _currentKilometers += km;
+        _distance += km;
         _totalOrder++;
       });
     } catch (e) {
@@ -370,11 +379,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
 
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-
-                          _finishSession();
-                        },
+                        onPressed: _finishSession,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.green,
                           foregroundColor: Colors.white,
@@ -400,16 +405,34 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
     );
   }
 
-  void _finishSession() {
-    // TODO:
-    // PUT/PATCH /work-session/${widget.work.sessionId}
-    //
-    // Kirim:
-    // kilometers_finish
-    // status = COMPLETED
-    //
-    // Setelah berhasil:
-    Navigator.pop(context, true);
+  void _finishSession() async {
+    try {
+      await api.post(
+        '/work/finish',
+        body: {
+          "work_session_id": widget.work.id,
+          "kilometers_finish": widget.work.kilometersStart! + _distance.ceil(),
+          "total_order": _totalOrder,
+        },
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FinishWorkSessionPage(
+            sessionId: widget.work.id.toString(),
+            startTime: DateTime.parse(widget.work.startedAt!),
+            finishTime: DateTime.now(),
+            platform: widget.work.platform!,
+            distance: _distance,
+            totalOrder: _totalOrder,
+            income: _currentIncome,
+          ),
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -693,7 +716,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.access_time_rounded,
-                value: _formatRupiah(38000),
+                value: _formatRupiah(0),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
                 backgroundColor: const Color(0xFFFFF5EF),
@@ -709,7 +732,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_gas_station_outlined,
-                value: _formatRupiah(5000),
+                value: _formatRupiah(0),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),
                 backgroundColor: const Color(0xFFF1F6FF),
@@ -721,7 +744,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_shipping_outlined,
-                value: '${_formatKm(_currentKilometers)} km',
+                value: '${_formatKm(_distance)} km',
                 label: 'Jarak',
                 iconColor: const Color(0xFF8B5CF6),
                 backgroundColor: const Color(0xFFF6F0FF),

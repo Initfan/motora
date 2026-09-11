@@ -1,663 +1,788 @@
 import 'package:flutter/material.dart';
+import 'package:motora/model/income_model.dart';
+import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:motora/utils/utils.dart';
 
-class FinishWorkPage extends StatefulWidget {
+class FinishWorkSessionPage extends StatefulWidget {
+  final String sessionId;
   final String platform;
-  final int orders;
-  final double income;
-  final double fuel;
+  final DateTime startTime;
+  final DateTime finishTime;
   final double distance;
-  final String duration;
+  final int totalOrder;
+  final int income;
 
-  const FinishWorkPage({
+  const FinishWorkSessionPage({
     super.key,
     required this.platform,
-    required this.orders,
-    required this.income,
-    required this.fuel,
     required this.distance,
-    required this.duration,
+    required this.totalOrder,
+    required this.income,
+    required this.startTime,
+    required this.finishTime,
+    required this.sessionId,
   });
 
   @override
-  State<FinishWorkPage> createState() => _FinishWorkPageState();
+  State<FinishWorkSessionPage> createState() => _FinishWorkSessionPageState();
 }
 
-class _FinishWorkPageState extends State<FinishWorkPage> {
-  final TextEditingController _parkingController = TextEditingController(
-    text: '0',
-  );
-
-  final TextEditingController _mealController = TextEditingController(
-    text: '0',
-  );
-
-  final TextEditingController _otherController = TextEditingController(
-    text: '0',
-  );
-
-  final TextEditingController _noteController = TextEditingController();
-
-  double get parking => double.tryParse(_parkingController.text) ?? 0;
-
-  double get meal => double.tryParse(_mealController.text) ?? 0;
-
-  double get other => double.tryParse(_otherController.text) ?? 0;
-
-  double get totalCost => widget.fuel + parking + meal + other;
-
-  double get netProfit => widget.income - totalCost;
-
-  double get targetProgress {
-    const target = 250000.0;
-
-    if (widget.income >= target) {
-      return 1;
-    }
-
-    return widget.income / target;
-  }
+class _FinishWorkSessionPageState extends State<FinishWorkSessionPage> {
+  late Duration duration = widget.finishTime.difference(widget.startTime);
+  late Future<List<IncomeModel>> futureIncome;
 
   @override
   void initState() {
     super.initState();
-
-    _parkingController.addListener(_refresh);
-    _mealController.addListener(_refresh);
-    _otherController.addListener(_refresh);
+    futureIncome = getIncomes();
   }
 
-  void _refresh() {
-    setState(() {});
+  Future<List<IncomeModel>> getIncomes() async {
+    final res = await api.get('/work/${widget.sessionId}/incomes');
+    final data = res['data'] as List<dynamic>;
+    return data.map((v) => IncomeModel.fromJson(v)).toList();
   }
+
+  String get _duration {
+    final hours = duration.inHours.toString().padLeft(2, '0');
+
+    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+
+    return '${hours}j ${minutes}m';
+  }
+
+  String get _average =>
+      "${(widget.distance / duration.inHours).toString().substring(0, 3)} km/j";
+
+  String _formatTime(DateTime time) => '${time.hour}:${time.minute}';
 
   @override
-  void dispose() {
-    _parkingController.dispose();
-    _mealController.dispose();
-    _otherController.dispose();
-    _noteController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _buildBack(context),
+      ),
+      backgroundColor: const Color(0xFFF8FAF9),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 30, 16, 30),
+          children: [
+            _buildHeaderCard(),
+
+            const SizedBox(height: 16),
+
+            _buildSessionInfo(),
+
+            const SizedBox(height: 16),
+
+            _buildIncomeBreakdown(widget.income, 0, 0),
+
+            const SizedBox(height: 16),
+
+            _buildOperationalCost(),
+
+            const SizedBox(height: 16),
+
+            _buildOrderList(context),
+
+            const SizedBox(height: 16),
+
+            _buildProfitCard(),
+          ],
+        ),
+      ),
+    );
   }
 
-  String _rupiah(double value) {
-    final text = value.round().toString();
-
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < text.length; i++) {
-      if (i > 0 && (text.length - i) % 3 == 0) {
-        buffer.write('.');
-      }
-
-      buffer.write(text[i]);
-    }
-
-    return 'Rp${buffer.toString()}';
+  ElevatedButton _buildBack(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.green,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        minimumSize: const Size.fromHeight(46),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: const Text(
+        'Kembali ke Beranda',
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+      ),
+    );
   }
 
-  void _saveSession() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'Sesi berhasil disimpan',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: AppColors.dark,
+  Widget _buildHeaderCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E8EB)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5F7EC),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          content: const Text(
-            'Data sesi narik kamu sudah berhasil dicatat.',
-            style: TextStyle(color: AppColors.muted, height: 1.5),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Selesai',
-                style: TextStyle(
-                  color: AppColors.green,
-                  fontWeight: FontWeight.w700,
-                ),
+            child: const Center(
+              child: Icon(
+                Icons.delivery_dining_rounded,
+                color: AppColors.green,
+                size: 31,
               ),
             ),
-          ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            widget.platform,
+            style: const TextStyle(
+              color: AppColors.dark,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            "${widget.startTime} • ${_formatTime(widget.startTime)} - ${_formatTime(widget.finishTime)}",
+            style: const TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+
+          const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5F7EC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.green,
+                  size: 15,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  "Selesai",
+                  style: const TextStyle(
+                    color: AppColors.green,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          const Divider(color: Color(0xFFEDEFF1), height: 1),
+
+          const SizedBox(height: 18),
+
+          const Text(
+            'Total Pendapatan',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            formatRupiah(widget.income),
+            style: const TextStyle(
+              color: AppColors.green,
+              fontSize: 29,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionInfo() {
+    return _SectionCard(
+      title: 'Ringkasan Sesi',
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _MetricBox(
+                  icon: Icons.receipt_long_rounded,
+                  value: '${widget.totalOrder}',
+                  label: 'Total Order',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricBox(
+                  icon: Icons.access_time_rounded,
+                  value: _duration,
+                  label: 'Durasi',
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Expanded(
+                child: _MetricBox(
+                  icon: Icons.route_rounded,
+                  value: "${widget.distance}",
+                  label: 'Jarak',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricBox(
+                  icon: Icons.speed_rounded,
+                  value: _average,
+                  label: 'Rata-rata',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIncomeBreakdown(int income, int bonus, int tip) {
+    return _SectionCard(
+      title: 'Pendapatan',
+      child: Column(
+        children: [
+          _MoneyRow(title: 'Pendapatan order', value: formatRupiah(income)),
+          _MoneyRow(title: 'Bonus / insentif', value: formatRupiah(bonus)),
+          _MoneyRow(title: 'Tips', value: formatRupiah(tip)),
+          const Divider(height: 22, color: Color(0xFFEDEFF1)),
+          _MoneyRow(
+            title: 'Total Pendapatan',
+            value: formatRupiah(income + bonus + tip),
+            isTotal: true,
+            valueColor: AppColors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOperationalCost() {
+    return _SectionCard(
+      title: 'Biaya Operasional',
+      child: Column(
+        children: [
+          _MoneyRow(
+            title: 'Bensin',
+            value: '- Rp25.000',
+            valueColor: const Color(0xFFD92D20),
+          ),
+          _MoneyRow(
+            title: 'Parkir',
+            value: '- Rp7.500',
+            valueColor: const Color(0xFFD92D20),
+          ),
+          _MoneyRow(
+            title: 'Makan & minum',
+            value: '- Rp10.000',
+            valueColor: const Color(0xFFD92D20),
+          ),
+          const Divider(height: 22, color: Color(0xFFEDEFF1)),
+          _MoneyRow(
+            title: 'Total Biaya',
+            value: '- Rp42.500',
+            isTotal: true,
+            valueColor: const Color(0xFFD92D20),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderList(BuildContext context) {
+    return FutureBuilder<List<IncomeModel>>(
+      future: futureIncome,
+      builder: (context, snapshot) {
+        return _SectionCard(
+          title: 'Order Terbaru',
+          trailing: Text(
+            '${widget.totalOrder} order',
+            style: const TextStyle(
+              color: AppColors.muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          child: Column(
+            children: [
+              ...snapshot.data!.map((e) {
+                DateTime time = DateTime.parse(e.createdAt!);
+                return _OrderItem(
+                  time: "${time.hour}:${time.minute}",
+                  distance: e.distance!,
+                  price: formatRupiah(e.amount!),
+                );
+              }),
+
+              const SizedBox(height: 4),
+
+              TextButton(
+                onPressed: () {
+                  showAllOrders(context, snapshot.data!);
+                },
+                child: const Text(
+                  'Lihat semua order',
+                  style: TextStyle(
+                    color: AppColors.green,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final bool targetReached = widget.income >= 250000;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAF9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.dark,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Selesaikan Sesi',
-          style: TextStyle(
-            color: AppColors.dark,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
-          children: [
-            _buildSessionCard(),
-
-            const SizedBox(height: 18),
-
-            _sectionTitle('Ringkasan Pendapatan'),
-
-            const SizedBox(height: 10),
-
-            _buildIncomeCard(),
-
-            const SizedBox(height: 18),
-
-            _sectionTitle('Biaya Operasional'),
-
-            const SizedBox(height: 10),
-
-            _buildCostCard(),
-
-            const SizedBox(height: 18),
-
-            _sectionTitle('Hasil Sesi'),
-
-            const SizedBox(height: 10),
-
-            _buildProfitCard(),
-
-            const SizedBox(height: 18),
-
-            _sectionTitle('Pencapaian Target'),
-
-            const SizedBox(height: 10),
-
-            _buildTargetCard(targetReached),
-
-            const SizedBox(height: 18),
-
-            _sectionTitle('Catatan'),
-
-            const SizedBox(height: 10),
-
-            _buildNoteField(),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              height: 54,
-              child: ElevatedButton(
-                onPressed: _saveSession,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                child: const Text(
-                  'Simpan Sesi',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            SizedBox(
-              height: 50,
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.dark,
-                  side: const BorderSide(color: Color(0xFFD8DDE3)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                child: const Text(
-                  'Kembali',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w800,
-        color: AppColors.dark,
-      ),
-    );
-  }
-
-  Widget _buildSessionCard() {
+  Widget _buildProfitCard() {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.dark,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFE9F8EF),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFCDEED9)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.green.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.trending_up_rounded,
+              color: AppColors.green,
+              size: 23,
+            ),
+          ),
+
+          const SizedBox(width: 13),
+
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Profit Bersih',
+                  style: TextStyle(
+                    color: AppColors.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Rp144.000',
+                  style: TextStyle(
+                    color: AppColors.green,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'Margin',
+                style: TextStyle(color: AppColors.muted, fontSize: 10),
+              ),
+              SizedBox(height: 3),
+              Text(
+                '77,2%',
+                style: TextStyle(
+                  color: AppColors.dark,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showAllOrders(BuildContext context, List<IncomeModel> incomes) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AllOrdersSheet(incomes),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final Widget child;
+  final Widget? trailing;
+
+  const _SectionCard({required this.title, required this.child, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE6E9EC)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'SESI HARI INI',
-            style: TextStyle(
-              color: Color(0xFF98A2B3),
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            widget.platform,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 21,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.dark,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (trailing != null) trailing!,
+            ],
           ),
 
           const SizedBox(height: 16),
 
-          Row(
-            children: [
-              _sessionInfo(
-                Icons.receipt_long_rounded,
-                '${widget.orders} Orders',
-              ),
-              const SizedBox(width: 18),
-              _sessionInfo(Icons.timer_outlined, widget.duration),
-              const SizedBox(width: 18),
-              _sessionInfo(
-                Icons.route_rounded,
-                '${widget.distance.toStringAsFixed(1)} km',
-              ),
-            ],
-          ),
+          child,
         ],
       ),
     );
   }
+}
 
-  Widget _sessionInfo(IconData icon, String text) {
-    return Expanded(
+class _MetricBox extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _MetricBox({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8F9),
+        borderRadius: BorderRadius.circular(13),
+      ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFB8F0CC), size: 17),
-          const SizedBox(width: 6),
-          Flexible(
+          Icon(icon, color: AppColors.green, size: 20),
+
+          const SizedBox(width: 9),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 9),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MoneyRow extends StatelessWidget {
+  final String title;
+  final String value;
+  final bool isTotal;
+  final Color? valueColor;
+
+  const _MoneyRow({
+    required this.title,
+    required this.value,
+    this.isTotal = false,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
             child: Text(
-              text,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              title,
+              style: TextStyle(
+                color: isTotal ? AppColors.dark : AppColors.muted,
+                fontSize: isTotal ? 13 : 12,
+                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
               ),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor ?? AppColors.dark,
+              fontSize: isTotal ? 14 : 12,
+              fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildIncomeCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE7EBE9)),
-      ),
-      child: Column(
-        children: [
-          _moneyRow('Pendapatan Order', widget.income, bold: true),
+class _OrderItem extends StatelessWidget {
+  final String time;
+  final String price;
+  final double distance;
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(height: 1, color: Color(0xFFECEFF1)),
-          ),
+  const _OrderItem({
+    required this.time,
+    required this.price,
+    required this.distance,
+  });
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Pendapatan Kotor',
-                style: TextStyle(
-                  color: AppColors.dark,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              Text(
-                _rupiah(widget.income),
-                style: const TextStyle(
-                  color: AppColors.green,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCostCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE7EBE9)),
-      ),
-      child: Column(
-        children: [
-          _costField(
-            label: 'Bensin',
-            controller: TextEditingController(
-              text: widget.fuel.round().toString(),
-            ),
-            enabled: false,
-          ),
-
-          const SizedBox(height: 12),
-
-          _costField(label: 'Parkir', controller: _parkingController),
-
-          const SizedBox(height: 12),
-
-          _costField(label: 'Makan / Minum', controller: _mealController),
-
-          const SizedBox(height: 12),
-
-          _costField(label: 'Biaya Lainnya', controller: _otherController),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(height: 1, color: Color(0xFFECEFF1)),
-          ),
-
-          _moneyRow(
-            'Total Biaya',
-            totalCost,
-            color: const Color(0xFFE25B5B),
-            bold: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _costField({
-    required String label,
-    required TextEditingController controller,
-    bool enabled = true,
-  }) {
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixText: 'Rp ',
-        filled: true,
-        fillColor: enabled ? const Color(0xFFF8FAF9) : const Color(0xFFF0F2F3),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE1E5E8)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE1E5E8)),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE1E5E8)),
-        ),
-      ),
-    );
-  }
-
-  Widget _moneyRow(
-    String title,
-    double amount, {
-    Color color = AppColors.dark,
-    bool bold = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: AppColors.muted,
-            fontSize: 14,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-        Text(
-          _rupiah(amount),
-          style: TextStyle(
-            color: color,
-            fontSize: 15,
-            fontWeight: bold ? FontWeight.w900 : FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfitCard() {
-    final bool positive = netProfit >= 0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFE8F8EE), Color(0xFFF6FBF8)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFCBEBD7)),
-      ),
-      child: Column(
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'PROFIT BERSIH',
-            style: TextStyle(
-              color: AppColors.muted,
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5F7EC),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.delivery_dining_rounded,
+              color: AppColors.green,
+              size: 19,
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        color: AppColors.dark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    const Text(
+                      'Selesai',
+                      style: TextStyle(
+                        color: AppColors.green,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  '$distance km',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 10),
+                ),
+              ],
+            ),
+          ),
+
+          Text(
+            price,
+            style: const TextStyle(
+              color: AppColors.dark,
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              letterSpacing: 1,
             ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            _rupiah(netProfit),
-            style: TextStyle(
-              color: positive ? AppColors.green : const Color(0xFFE25B5B),
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            positive
-                ? 'Pendapatan setelah dikurangi biaya operasional'
-                : 'Biaya operasional melebihi pendapatan',
-            style: const TextStyle(color: AppColors.muted, fontSize: 12),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildTargetCard(bool targetReached) {
-    final percent = (targetProgress * 100).clamp(0, 100);
+class _AllOrdersSheet extends StatelessWidget {
+  const _AllOrdersSheet(this.incomes);
+  final List<IncomeModel> incomes;
 
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
+      height: MediaQuery.of(context).size.height * 0.50,
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE7EBE9)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Target harian',
-                style: TextStyle(
-                  color: AppColors.dark,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                '${percent.toStringAsFixed(0)}%',
-                style: TextStyle(
-                  color: targetReached ? AppColors.green : AppColors.muted,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-
           const SizedBox(height: 12),
 
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: LinearProgressIndicator(
-              value: targetProgress,
-              minHeight: 10,
-              backgroundColor: const Color(0xFFE8ECEA),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.green),
+          Container(
+            width: 42,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD0D5DD),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _rupiah(widget.income),
-                style: const TextStyle(
-                  color: AppColors.green,
-                  fontWeight: FontWeight.w800,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Text(
+                  'Semua Order',
+                  style: TextStyle(
+                    color: AppColors.dark,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const Text(
-                'Target Rp250.000',
-                style: TextStyle(color: AppColors.muted, fontSize: 12),
-              ),
-            ],
+                Spacer(),
+                Text(
+                  "${incomes.length}",
+                  style: TextStyle(color: AppColors.muted, fontSize: 11),
+                ),
+              ],
+            ),
           ),
 
-          if (targetReached) ...[
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1F4E8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.green,
-                    size: 18,
+          const SizedBox(height: 15),
+
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
+              itemCount: incomes.length,
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, color: Color(0xFFEDEFF1)),
+              itemBuilder: (context, index) {
+                final order = incomes[index];
+                DateTime time = DateTime.parse(order.createdAt!);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${time.hour}:${time.minute}",
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${order.distance}',
+                              style: const TextStyle(
+                                color: AppColors.dark,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              'Order selesai',
+                              style: TextStyle(
+                                color: AppColors.green,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Text(
+                        formatRupiah(order.amount!),
+                        style: const TextStyle(
+                          color: AppColors.dark,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Target harian berhasil tercapai!',
-                    style: TextStyle(
-                      color: AppColors.green,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          ],
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNoteField() {
-    return TextField(
-      controller: _noteController,
-      maxLines: 4,
-      decoration: InputDecoration(
-        hintText: 'Tambahkan catatan untuk sesi ini...',
-        hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 13),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFFE1E5E8)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFFE1E5E8)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: AppColors.green, width: 1.5),
-        ),
       ),
     );
   }

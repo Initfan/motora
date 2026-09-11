@@ -9,21 +9,8 @@ import 'package:motora/screen/home/start_work_session.dart';
 import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  late Future<WorkModel> futureSession;
-
-  @override
-  void initState() {
-    super.initState();
-    futureSession = getActiveSession();
-  }
 
   Future<WorkModel> getActiveSession() async {
     final res = await api.get('/work');
@@ -50,7 +37,7 @@ class _HomePageState extends State<HomePage> {
                       14,
                     ),
                     child: FutureBuilder<WorkModel>(
-                      future: futureSession,
+                      future: getActiveSession(),
                       builder: (context, snapshot) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
