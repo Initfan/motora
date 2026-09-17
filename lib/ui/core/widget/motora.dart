@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motora/screen/activity.dart';
-import 'package:motora/screen/home/home.dart';
+import 'package:motora/ui/home/widget/home_screen.dart';
 import 'package:motora/screen/motor/motor.dart';
 import 'package:motora/screen/profile.dart';
 import 'package:motora/screen/report.dart';
@@ -34,7 +34,7 @@ class _MotoraState extends State<Motora> {
 
   List<Widget> get _pages {
     return const [
-      HomePage(),
+      HomeScreen(),
       MotorPage(),
       ActivityPage(),
       ReportPage(),

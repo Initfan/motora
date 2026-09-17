@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:motora/components/motora.dart';
+import 'package:motora/ui/core/widget/motora.dart';
 import 'package:motora/components/snackbar.dart';
 import 'package:motora/screen/auth/register.dart';
 import 'package:motora/utils/api.dart';

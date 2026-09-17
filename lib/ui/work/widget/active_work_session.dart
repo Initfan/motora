@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:motora/domain/models/motor/motorcycle.dart';
 import 'package:motora/model/work_model.dart';
-import 'package:motora/screen/home/finish_work_session.dart';
+import 'package:motora/ui/work/widget/finish_work_session.dart';
 import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
 

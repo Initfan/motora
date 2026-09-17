@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:motora/data/repositories/motorcycle_repository.dart';
 import 'package:motora/domain/models/motor/motorcycle.dart';
+import 'package:motora/utils/error.dart';
 
 part 'select_motor_view_model.freezed.dart';
 
@@ -34,11 +35,15 @@ class SelectMotorViewModel extends ChangeNotifier {
     try {
       final motorcycles = await repository.getUserMotorcycles();
 
-      _state = _state.copyWith(isLoading: false, motorcycles: motorcycles);
+      _state = _state.copyWith(
+        isLoading: false,
+        motorcycles: motorcycles,
+        selectedMotorcycle: state.selectedMotorcycle ?? motorcycles.first,
+      );
     } catch (e) {
       _state = _state.copyWith(
         isLoading: false,
-        errorMessage: _getErrorMessage(e),
+        errorMessage: getErrorMessage(e),
       );
     }
 
@@ -59,32 +64,6 @@ class SelectMotorViewModel extends ChangeNotifier {
     _state = _state.copyWith(isSelecting: true);
 
     notifyListeners();
-
-    try {
-      // Nanti jika pemilihan motor perlu
-      // disimpan ke backend:
-      //
-      // await repository.setActiveMotorcycle(...);
-
-      return true;
-    } finally {
-      _state = _state.copyWith(isSelecting: false);
-
-      notifyListeners();
-    }
-  }
-
-  String _getErrorMessage(Object error) {
-    final message = error.toString();
-
-    if (message.contains('SocketException')) {
-      return 'Tidak dapat terhubung ke server.';
-    }
-
-    if (message.contains('401')) {
-      return 'Sesi login kamu telah berakhir.';
-    }
-
-    return 'Gagal mengambil data motor.';
+    return true;
   }
 }

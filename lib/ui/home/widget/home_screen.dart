@@ -1,40 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:motora/domain/models/work/work_session.dart';
 import 'package:motora/ui/motor/widget/motor_card.dart';
+import 'package:motora/ui/work/view_models/work_session_view_model.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:motora/utils/format.dart';
+import 'package:provider/provider.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final String driverName = 'Driver';
+class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
 
-  final String motorcycleName = 'Honda PCX 160';
-
-  final String policeNumber = 'B 123 ABC';
-
-  final int kilometers = 12450;
-
-  final int currentProfit = 87500;
-
-  final int profitTarget = 150000;
-
-  final int totalOrder = 18;
-
-  final double distance = 82;
-
-  final int fuelCost = 38000;
-
-  final int spending = 5000;
-
-  final int maintenanceRemaining = 420;
-
-  bool hasActiveSession = false;
-
-  double get profitProgress {
+  double profitProgress(double profitTarget, double currentProfit) {
     if (profitTarget <= 0) {
       return 0;
     }
@@ -42,15 +25,13 @@ class _HomePageState extends State<HomePage> {
     return (currentProfit / profitTarget).clamp(0.0, 1.0);
   }
 
-  String _formatRupiah(int value) {
-    return 'Rp${value.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}';
-  }
-
-  String _formatNumber(num value) {
-    return value.toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<WorkSessionViewModel>().load();
+      setState(() => isLoading = false);
+    });
   }
 
   @override
@@ -64,42 +45,48 @@ class _HomePageState extends State<HomePage> {
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _buildHeader(),
+              sliver: Consumer<WorkSessionViewModel>(
+                builder: (context, model, child) {
+                  final session = model.state.workSession;
 
-                  const SizedBox(height: 20),
+                  return SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildHeader(),
 
-                  MotorCard(),
+                      const SizedBox(height: 20),
 
-                  const SizedBox(height: 14),
+                      MotorCard(),
 
-                  _buildProfitCard(),
+                      const SizedBox(height: 14),
 
-                  const SizedBox(height: 14),
+                      _buildProfitCard(session, model.state.currentIncome),
 
-                  _buildStartSessionButton(),
+                      const SizedBox(height: 14),
 
-                  const SizedBox(height: 24),
+                      _buildStartSessionButton(session),
 
-                  _buildSectionTitle('Hari ini'),
+                      const SizedBox(height: 24),
 
-                  const SizedBox(height: 10),
+                      _buildSectionTitle('Hari ini'),
 
-                  _buildStats(),
+                      const SizedBox(height: 10),
 
-                  const SizedBox(height: 24),
+                      _buildStats(session),
 
-                  _buildSectionTitle(
-                    'Perawatan motor',
-                    trailing: 'Lihat semua',
-                    onTrailingTap: () {},
-                  ),
+                      const SizedBox(height: 24),
 
-                  const SizedBox(height: 10),
+                      _buildSectionTitle(
+                        'Perawatan motor',
+                        trailing: 'Lihat semua',
+                        onTrailingTap: () {},
+                      ),
 
-                  _buildMaintenanceCard(),
-                ]),
+                      const SizedBox(height: 10),
+
+                      _buildMaintenanceCard(),
+                    ]),
+                  );
+                },
               ),
             ),
           ],
@@ -211,8 +198,25 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildProfitCard() {
-    final progress = profitProgress * 100;
+  Widget _buildProfitCard(WorkSession? session, int currentProfit) {
+    if (isLoading || session == null) {
+      return Container(
+        height: 180,
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.green,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      );
+    }
+
+    final progress =
+        profitProgress(
+          session.goalProfit.toDouble(),
+          currentProfit.toDouble(),
+        ) *
+        100;
 
     return Container(
       width: double.infinity,
@@ -252,7 +256,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 7),
 
           Text(
-            _formatRupiah(currentProfit),
+            formatRupiah(currentProfit),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
@@ -264,7 +268,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 4),
 
           Text(
-            'Target ${_formatRupiah(profitTarget)}',
+            'Target ${formatRupiah(session.goalProfit)}',
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 12,
@@ -277,7 +281,8 @@ class _HomePageState extends State<HomePage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
-              value: profitProgress,
+              value: 80,
+              // value: profitProgress,
               minHeight: 8,
               backgroundColor: Colors.white24,
               valueColor: const AlwaysStoppedAnimation(Colors.white),
@@ -288,12 +293,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStartSessionButton() {
+  Widget _buildStartSessionButton(WorkSession? session) {
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () =>
+            session == null ? context.go('/work') : context.go('/work/active'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.dark,
           foregroundColor: Colors.white,
@@ -306,7 +312,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              hasActiveSession
+              session != null
                   ? Icons.play_arrow_rounded
                   : Icons.play_arrow_rounded,
               size: 22,
@@ -315,7 +321,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 8),
 
             Text(
-              hasActiveSession ? 'Lanjutkan Sesi' : 'Mulai Sesi Narik',
+              session != null ? 'Lanjutkan Sesi' : 'Mulai Sesi Narik',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),
           ],
@@ -359,7 +365,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildStats() {
+  Widget _buildStats(WorkSession? session) {
     return Column(
       children: [
         Row(
@@ -367,7 +373,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.account_tree_outlined,
-                value: '$totalOrder',
+                value: "${session?.totalOrder}",
                 label: 'Order',
                 iconColor: const Color(0xFF4CAF50),
                 backgroundColor: const Color(0xFFF0FAF3),
@@ -379,7 +385,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.access_time_rounded,
-                value: _formatRupiah(fuelCost),
+                value: formatRupiah(100),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
                 backgroundColor: const Color(0xFFFFF5EF),
@@ -395,7 +401,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_gas_station_outlined,
-                value: _formatRupiah(spending),
+                value: formatRupiah(100),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),
                 backgroundColor: const Color(0xFFF1F6FF),
@@ -407,7 +413,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.route_rounded,
-                value: '${_formatNumber(distance)} km',
+                value: '${formatNumber(session?.distance ?? 0)} km',
                 label: 'Jarak',
                 iconColor: const Color(0xFF8B5CF6),
                 backgroundColor: const Color(0xFFF6F0FF),
@@ -525,7 +531,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${_formatNumber(maintenanceRemaining)} km',
+                '${formatNumber(100)} km',
                 style: const TextStyle(
                   color: AppColors.dark,
                   fontSize: 13,

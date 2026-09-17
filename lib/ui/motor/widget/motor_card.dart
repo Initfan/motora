@@ -19,7 +19,7 @@ class _MotorCardState extends State<MotorCard> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<SelectMotorViewModel>().loadMotorcycles();
     });
   }
@@ -31,16 +31,17 @@ class _MotorCardState extends State<MotorCard> {
         final state = viewModel.state;
 
         if (state.isLoading) {
-          return SizedBox();
+          return CardMotora(height: 138, child: SizedBox());
         }
 
-        return GestureDetector(
-          onTap: () => context.push('/motor'),
-          child: Motor(
-            data: state.selectedMotorcycle ?? state.motorcycles.first,
-            icon: true,
-          ),
-        );
+        if (state.selectedMotorcycle != null) {
+          return GestureDetector(
+            onTap: () => context.push('/motor'),
+            child: Motor(data: state.selectedMotorcycle!, icon: true),
+          );
+        }
+
+        return SizedBox();
       },
     );
   }
