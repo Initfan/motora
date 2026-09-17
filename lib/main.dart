@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:motora/components/motora.dart';
-import 'package:motora/provider/motor_provider.dart';
-import 'package:motora/screen/splash.dart';
-import 'package:motora/utils/token_storage.dart';
+import 'package:motora/config/dependencies.dart';
+import 'package:motora/utils/router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => MotorProvider(),
-      child: const MotoraApp(),
-    ),
-  );
+  runApp(MultiProvider(providers: dependencies, child: MotoraApp()));
 }
 
 class MotoraApp extends StatelessWidget {
@@ -22,7 +15,8 @@ class MotoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
       title: 'MotoCare Driver',
       builder: (context, child) {
@@ -50,17 +44,17 @@ class MotoraApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: Scaffold(
-        body: FutureBuilder<String?>(
-          future: TokenStorage().getToken(),
-          builder: (context, snapshot) {
-            if (snapshot.data != null) {
-              return Motora();
-            }
-            return SplashScreen();
-          },
-        ),
-      ),
+      // home: Scaffold(
+      //   body: FutureBuilder<String?>(
+      //     future: TokenStorage().getToken(),
+      //     builder: (context, snapshot) {
+      //       if (snapshot.data != null) {
+      //         return Motora();
+      //       }
+      //       return SplashScreen();
+      //     },
+      //   ),
+      // ),
     );
   }
 }

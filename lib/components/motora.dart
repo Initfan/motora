@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:motora/model/motor_model.dart';
-import 'package:motora/provider/motor_provider.dart';
 import 'package:motora/screen/activity.dart';
 import 'package:motora/screen/home/home.dart';
 import 'package:motora/screen/motor/motor.dart';
 import 'package:motora/screen/profile.dart';
 import 'package:motora/screen/report.dart';
-import 'package:motora/utils/api.dart';
 import 'package:motora/utils/colors.dart';
-import 'package:provider/provider.dart';
 
 class Motora extends StatefulWidget {
   final int initialIndex;
@@ -26,18 +22,6 @@ class _MotoraState extends State<Motora> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
-    defaultMotor();
-  }
-
-  void defaultMotor() async {
-    try {
-      final res = await api.get('/motorcycle/user');
-      final data = res['data'].values.toList()[0];
-      final motor = MotorModel.fromJson(data);
-      Provider.of<MotorProvider>(context, listen: false).setMotor(motor);
-    } catch (e) {
-      print(e);
-    }
   }
 
   void _onItemTapped(int index) {

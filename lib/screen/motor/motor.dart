@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:motora/components/card.dart';
-import 'package:motora/components/motor_card.dart';
 import 'package:motora/components/motor_health.dart';
 import 'package:motora/screen/motor/daily_checklist.dart';
 import 'package:motora/screen/motor/damage.dart';
@@ -38,8 +37,6 @@ class _MotorPageState extends State<MotorPage> {
                     _buildHeader(),
 
                     const SizedBox(height: 16),
-
-                    MotorCard(),
 
                     const SizedBox(height: 13),
 

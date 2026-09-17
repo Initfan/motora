@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:motora/components/card.dart';
-import 'package:motora/model/motor_model.dart';
-import 'package:motora/provider/motor_provider.dart';
-import 'package:motora/screen/motor/select_motor.dart';
+import 'package:motora/domain/models/motor/motorcycle.dart';
+import 'package:motora/ui/motor/view_models/select_motor_view_model.dart';
 import 'package:motora/utils/colors.dart';
 import 'package:provider/provider.dart';
 
@@ -16,19 +16,31 @@ class MotorCard extends StatefulWidget {
 
 class _MotorCardState extends State<MotorCard> {
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SelectMotorViewModel>().loadMotorcycles();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<MotorProvider>(
-      builder: (context, value, child) {
-        if (value.motor != null) {
-          return GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => SelectMotorPage()),
-            ),
-            child: Motor(data: value.motor!, icon: true),
-          );
+    return Consumer<SelectMotorViewModel>(
+      builder: (context, viewModel, child) {
+        final state = viewModel.state;
+
+        if (state.isLoading) {
+          return SizedBox();
         }
-        return SizedBox();
+
+        return GestureDetector(
+          onTap: () => context.push('/motor'),
+          child: Motor(
+            data: state.selectedMotorcycle ?? state.motorcycles.first,
+            icon: true,
+          ),
+        );
       },
     );
   }
@@ -37,7 +49,7 @@ class _MotorCardState extends State<MotorCard> {
 class Motor extends StatelessWidget {
   const Motor({super.key, required this.data, this.icon = false});
 
-  final MotorModel data;
+  final Motorcycle data;
   final bool icon;
 
   String formatNumber(int number) {
@@ -83,7 +95,7 @@ class Motor extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      formatNumber(data.kilometers!),
+                      formatNumber(data.kilometers),
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:motora/model/motor_model.dart';
+import 'package:motora/domain/models/motor/motorcycle.dart';
 import 'package:motora/model/work_model.dart';
 import 'package:motora/screen/home/finish_work_session.dart';
 import 'package:motora/utils/api.dart';
@@ -9,7 +9,7 @@ import 'package:motora/utils/colors.dart';
 
 class ActiveWorkPage extends StatefulWidget {
   final WorkModel work;
-  final MotorModel motor;
+  final Motorcycle motor;
   final double distance;
   final int totalOrder;
   final int income;
@@ -494,7 +494,7 @@ class _ActiveWorkSessionPageState extends State<ActiveWorkPage> {
     );
   }
 
-  Widget _buildSessionHeader(MotorModel motor) {
+  Widget _buildSessionHeader(Motorcycle motor) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
