@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:motora/ui/work/widget/start_work_screen.dart';
 import 'package:motora/screen/motor/add_motorcycle.dart';
 import 'package:motora/ui/motor/widget/select_motor_screen.dart';
-// import 'package:motora/ui/work/widget/work_sekssion_screen.dart';
+import 'package:motora/ui/work/widget/work_session_screen.dart';
 
 final router = GoRouter(
   routes: [
@@ -12,7 +12,7 @@ final router = GoRouter(
       path: '/work',
       builder: (_, _) => StartWorkScreen(),
       routes: [
-        // GoRoute(path: '/active', builder: (_, _) => WorkSessionScreen()),
+        GoRoute(path: '/active', builder: (_, _) => WorkSessionScreen()),
       ],
     ),
     GoRoute(

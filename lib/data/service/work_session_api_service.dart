@@ -44,4 +44,24 @@ class WorkSessionApiService {
 
     return WorkSessionApiModel.fromJson(Map<String, dynamic>.from(data));
   }
+
+  Future<bool> saveIncome(int sessionId, int amount, double km) async {
+    final res = await api.post(
+      '/work/income',
+      body: {
+        "work_session_id": sessionId,
+        "income_type": "ORDER",
+        "amount": amount,
+        "distance": km,
+      },
+    );
+
+    final data = res['income'];
+
+    if (data is! Map) {
+      throw const FormatException('Response save income tidak valid');
+    }
+
+    return true;
+  }
 }

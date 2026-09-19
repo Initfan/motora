@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WorkSessionUiState {
 
- bool get isLoading; String? get errorMessage; WorkSession? get workSession; int get currentIncome;
+ bool get isLoading; String? get errorMessage; WorkSession? get workSession; int get currentIncome; double get distance; Duration get duration; int get order;
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $WorkSessionUiStateCopyWith<WorkSessionUiState> get copyWith => _$WorkSessionUiS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.currentIncome, currentIncome) || other.currentIncome == currentIncome));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.currentIncome, currentIncome) || other.currentIncome == currentIncome)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.order, order) || other.order == order));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,currentIncome);
+int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,currentIncome,distance,duration,order);
 
 @override
 String toString() {
-  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, currentIncome: $currentIncome)';
+  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, currentIncome: $currentIncome, distance: $distance, duration: $duration, order: $order)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $WorkSessionUiStateCopyWith<$Res>  {
   factory $WorkSessionUiStateCopyWith(WorkSessionUiState value, $Res Function(WorkSessionUiState) _then) = _$WorkSessionUiStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, String? errorMessage, WorkSession? workSession, int currentIncome
+ bool isLoading, String? errorMessage, WorkSession? workSession, int currentIncome, double distance, Duration duration, int order
 });
 
 
@@ -62,12 +62,15 @@ class _$WorkSessionUiStateCopyWithImpl<$Res>
 
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? currentIncome = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? currentIncome = null,Object? distance = null,Object? duration = null,Object? order = null,}) {
   return _then(_self.copyWith(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,workSession: freezed == workSession ? _self.workSession : workSession // ignore: cast_nullable_to_non_nullable
 as WorkSession?,currentIncome: null == currentIncome ? _self.currentIncome : currentIncome // ignore: cast_nullable_to_non_nullable
+as int,distance: null == distance ? _self.distance : distance // ignore: cast_nullable_to_non_nullable
+as double,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
+as Duration,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -165,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome,  double distance,  Duration duration,  int order)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState() when $default != null:
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome,_that.distance,_that.duration,_that.order);case _:
   return orElse();
 
 }
@@ -186,10 +189,10 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.curre
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome,  double distance,  Duration duration,  int order)  $default,) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState():
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome,_that.distance,_that.duration,_that.order);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +209,10 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.curre
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int currentIncome,  double distance,  Duration duration,  int order)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState() when $default != null:
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.currentIncome,_that.distance,_that.duration,_that.order);case _:
   return null;
 
 }
@@ -221,13 +224,16 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.curre
 
 
 class _WorkSessionUiState implements WorkSessionUiState {
-  const _WorkSessionUiState({this.isLoading = false, this.errorMessage, this.workSession, this.currentIncome = 0});
+  const _WorkSessionUiState({this.isLoading = false, this.errorMessage, this.workSession, this.currentIncome = 0, this.distance = 0, this.duration = Duration.zero, this.order = 0});
   
 
 @override@JsonKey() final  bool isLoading;
 @override final  String? errorMessage;
 @override final  WorkSession? workSession;
 @override@JsonKey() final  int currentIncome;
+@override@JsonKey() final  double distance;
+@override@JsonKey() final  Duration duration;
+@override@JsonKey() final  int order;
 
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
@@ -239,16 +245,16 @@ _$WorkSessionUiStateCopyWith<_WorkSessionUiState> get copyWith => __$WorkSession
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.currentIncome, currentIncome) || other.currentIncome == currentIncome));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.currentIncome, currentIncome) || other.currentIncome == currentIncome)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.order, order) || other.order == order));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,currentIncome);
+int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,currentIncome,distance,duration,order);
 
 @override
 String toString() {
-  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, currentIncome: $currentIncome)';
+  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, currentIncome: $currentIncome, distance: $distance, duration: $duration, order: $order)';
 }
 
 
@@ -259,7 +265,7 @@ abstract mixin class _$WorkSessionUiStateCopyWith<$Res> implements $WorkSessionU
   factory _$WorkSessionUiStateCopyWith(_WorkSessionUiState value, $Res Function(_WorkSessionUiState) _then) = __$WorkSessionUiStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, String? errorMessage, WorkSession? workSession, int currentIncome
+ bool isLoading, String? errorMessage, WorkSession? workSession, int currentIncome, double distance, Duration duration, int order
 });
 
 
@@ -276,12 +282,15 @@ class __$WorkSessionUiStateCopyWithImpl<$Res>
 
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? currentIncome = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? currentIncome = null,Object? distance = null,Object? duration = null,Object? order = null,}) {
   return _then(_WorkSessionUiState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,workSession: freezed == workSession ? _self.workSession : workSession // ignore: cast_nullable_to_non_nullable
 as WorkSession?,currentIncome: null == currentIncome ? _self.currentIncome : currentIncome // ignore: cast_nullable_to_non_nullable
+as int,distance: null == distance ? _self.distance : distance // ignore: cast_nullable_to_non_nullable
+as double,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
+as Duration,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
