@@ -45,12 +45,18 @@ class WorkSessionApiService {
     return WorkSessionApiModel.fromJson(Map<String, dynamic>.from(data));
   }
 
-  Future<bool> saveIncome(int sessionId, int amount, double km) async {
+  Future<bool> saveIncome(
+    int sessionId,
+    int amount,
+    double km,
+    int order,
+  ) async {
     final res = await api.post(
       '/work/income',
       body: {
         "work_session_id": sessionId,
         "income_type": "ORDER",
+        "order": order,
         "amount": amount,
         "distance": km,
       },

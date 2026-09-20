@@ -15,15 +15,18 @@ _WorkSession _$WorkSessionFromJson(Map<String, dynamic> json) => _WorkSession(
   fuelCondition: json['fuelCondition'] as String,
   kilometersFinish: (json['kilometersFinish'] as num?)?.toInt(),
   status: json['status'] as String? ?? "ACTIVE",
+  fuelExpense: (json['fuelExpense'] as num?)?.toInt() ?? 0,
+  expense: (json['expense'] as num?)?.toInt() ?? 0,
   distance: (json['distance'] as num?)?.toInt() ?? 0,
   income: (json['income'] as num?)?.toInt() ?? 0,
-  totalOrder: (json['totalOrder'] as num?)?.toInt() ?? 0,
+  order: (json['order'] as num?)?.toInt() ?? 0,
+  motorcycle: Motorcycle.fromJson(json['motorcycle'] as Map<String, dynamic>),
   startedAt: json['startedAt'] == null
       ? null
       : DateTime.parse(json['startedAt'] as String),
-  endedAt: json['endedAt'] == null
+  finishedAt: json['finishedAt'] == null
       ? null
-      : DateTime.parse(json['endedAt'] as String),
+      : DateTime.parse(json['finishedAt'] as String),
 );
 
 Map<String, dynamic> _$WorkSessionToJson(_WorkSession instance) =>
@@ -36,9 +39,12 @@ Map<String, dynamic> _$WorkSessionToJson(_WorkSession instance) =>
       'fuelCondition': instance.fuelCondition,
       'kilometersFinish': instance.kilometersFinish,
       'status': instance.status,
+      'fuelExpense': instance.fuelExpense,
+      'expense': instance.expense,
       'distance': instance.distance,
       'income': instance.income,
-      'totalOrder': instance.totalOrder,
+      'order': instance.order,
+      'motorcycle': instance.motorcycle,
       'startedAt': instance.startedAt?.toIso8601String(),
-      'endedAt': instance.endedAt?.toIso8601String(),
+      'finishedAt': instance.finishedAt?.toIso8601String(),
     };

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'motorcycle.freezed.dart';
+part 'motorcycle.g.dart';
 
 @freezed
 abstract class Motorcycle with _$Motorcycle {
@@ -10,11 +11,15 @@ abstract class Motorcycle with _$Motorcycle {
     required String model,
     required String year,
     required String transmission,
-    required String policeNumber,
+    @JsonKey(name: 'police_number') required String policeNumber,
     required int kilometers,
-    required int avgKilometersPerDay,
-    required int userId,
-    DateTime? lastServiceDate,
-    String? motorUrl,
+    @JsonKey(name: 'avg_kilometers_per_day') required int avgKilometersPerDay,
+    @JsonKey(name: 'user_id') required int userId,
+    @JsonKey(name: 'last_service_date') DateTime? lastServiceDate,
+    String? status,
+    @JsonKey(name: 'motor_url') String? motorUrl,
   }) = _Motorcycle;
+
+  factory Motorcycle.fromJson(Map<String, dynamic> json) =>
+      _$MotorcycleFromJson(json);
 }

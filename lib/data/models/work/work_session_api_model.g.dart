@@ -10,21 +10,26 @@ _WorkSessionApiModel _$WorkSessionApiModelFromJson(Map<String, dynamic> json) =>
     _WorkSessionApiModel(
       id: (json['id'] as num).toInt(),
       motorcycleId: (json['motorcycle_id'] as num).toInt(),
+      motorcycle: Motorcycle.fromJson(
+        json['motorcycle'] as Map<String, dynamic>,
+      ),
       platform: json['platform'] as String,
       kilometersStart: (json['kilometers_start'] as num).toInt(),
       goalProfit: (json['goal_profit'] as num).toInt(),
       fuelCondition: json['fuel_condition'] as String,
       kilometersFinish: (json['kilometers_finish'] as num?)?.toInt(),
-      distance: (json['distance'] as num?)?.toInt() ?? 0,
-      income: (json['income'] as num?)?.toInt() ?? 0,
-      totalOrder: (json['total_order'] as num?)?.toInt() ?? 0,
+      expense: (json['total_expense'] as num?)?.toInt() ?? 0,
+      distance: (json['total_distance'] as num?)?.toInt() ?? 0,
+      fuelExpense: (json['total_fuel'] as num?)?.toInt() ?? 0,
+      income: (json['total_income'] as num?)?.toInt() ?? 0,
+      order: (json['total_order'] as num?)?.toInt() ?? 0,
       status: json['status'] as String? ?? 'ACTIVE',
       startedAt: json['started_at'] == null
           ? null
           : DateTime.parse(json['started_at'] as String),
-      endedAt: json['ended_at'] == null
+      finishedAt: json['finished_at'] == null
           ? null
-          : DateTime.parse(json['ended_at'] as String),
+          : DateTime.parse(json['finished_at'] as String),
     );
 
 Map<String, dynamic> _$WorkSessionApiModelToJson(
@@ -32,15 +37,18 @@ Map<String, dynamic> _$WorkSessionApiModelToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'motorcycle_id': instance.motorcycleId,
+  'motorcycle': instance.motorcycle,
   'platform': instance.platform,
   'kilometers_start': instance.kilometersStart,
   'goal_profit': instance.goalProfit,
   'fuel_condition': instance.fuelCondition,
   'kilometers_finish': instance.kilometersFinish,
-  'distance': instance.distance,
-  'income': instance.income,
-  'total_order': instance.totalOrder,
+  'total_expense': instance.expense,
+  'total_distance': instance.distance,
+  'total_fuel': instance.fuelExpense,
+  'total_income': instance.income,
+  'total_order': instance.order,
   'status': instance.status,
   'started_at': instance.startedAt?.toIso8601String(),
-  'ended_at': instance.endedAt?.toIso8601String(),
+  'finished_at': instance.finishedAt?.toIso8601String(),
 };

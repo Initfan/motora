@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:motora/domain/models/motor/motorcycle.dart';
+import 'package:go_router/go_router.dart';
 import 'package:motora/domain/models/work/work_session.dart';
-import 'package:motora/ui/motor/view_models/select_motor_view_model.dart';
 import 'package:motora/ui/work/view_models/work_session_view_model.dart';
 import 'package:motora/ui/work/widget/income_sheet.dart';
 import 'package:motora/utils/colors.dart';
@@ -188,14 +187,9 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           child: Consumer<WorkSessionViewModel>(
             builder: (context, value, child) {
-              final motor = context
-                  .read<SelectMotorViewModel>()
-                  .state
-                  .selectedMotorcycle!;
-
               return Column(
                 children: [
-                  _buildSessionHeader(motor, value.state.workSession!, value),
+                  _buildSessionHeader(value.state.workSession!, value),
 
                   const SizedBox(height: 18),
 
@@ -220,10 +214,8 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
       elevation: 0,
 
       leading: IconButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.dark),
+        onPressed: () => context.go('/'),
+        icon: const Icon(Icons.arrow_back_ios, color: AppColors.dark),
       ),
 
       title: const Text(
@@ -244,11 +236,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
     );
   }
 
-  Widget _buildSessionHeader(
-    Motorcycle motor,
-    WorkSession session,
-    WorkSessionViewModel model,
-  ) {
+  Widget _buildSessionHeader(WorkSession session, WorkSessionViewModel model) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -317,7 +305,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
               const SizedBox(width: 6),
 
               Text(
-                "${motor.brand} ${motor.model}",
+                "${session.motorcycle.brand} ${session.motorcycle.model}",
                 style: const TextStyle(
                   color: AppColors.dark,
                   fontSize: 14,
@@ -352,7 +340,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
           const SizedBox(height: 5),
 
           Text(
-            motor.policeNumber,
+            session.motorcycle.policeNumber,
             style: const TextStyle(
               color: AppColors.muted,
               fontSize: 12,
@@ -406,7 +394,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
           const SizedBox(height: 8),
 
           Text(
-            _formatRupiah(model.state.currentIncome),
+            _formatRupiah(model.state.income),
             style: const TextStyle(
               color: AppColors.dark,
               fontSize: 28,

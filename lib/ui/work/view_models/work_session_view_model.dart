@@ -14,10 +14,11 @@ abstract class WorkSessionUiState with _$WorkSessionUiState {
     @Default(false) bool isLoading,
     String? errorMessage,
     WorkSession? workSession,
-    @Default(0) int currentIncome,
+    @Default(0) int fuelExpense,
+    @Default(0) int income,
     @Default(0) double distance,
-    @Default(Duration.zero) Duration duration,
     @Default(0) int order,
+    @Default(Duration.zero) Duration duration,
   }) = _WorkSessionUiState;
 }
 
@@ -76,10 +77,8 @@ class WorkSessionViewModel extends ChangeNotifier {
       return 0;
     }
 
-    return (state.workSession!.goalProfit / state.currentIncome).clamp(
-      0.0,
-      1.0,
-    );
+    return ((state.workSession?.income ?? 0) / state.workSession!.goalProfit)
+        .clamp(0.0, 1.0);
   }
 
   String get formatKm {
@@ -96,10 +95,11 @@ class WorkSessionViewModel extends ChangeNotifier {
         sessionId: _state.workSession!.id,
         amount: amount,
         km: distance,
+        order: order,
       );
 
       _state = _state.copyWith(
-        currentIncome: _state.currentIncome + amount,
+        income: _state.income + amount,
         distance: _state.distance + distance,
         order: _state.order + order,
       );
@@ -120,7 +120,14 @@ class WorkSessionViewModel extends ChangeNotifier {
     try {
       final workSession = await repository.getActiveSession();
 
-      _state = _state.copyWith(isLoading: false, workSession: workSession);
+      _state = _state.copyWith(
+        isLoading: false,
+        workSession: workSession,
+        distance: workSession.distance.toDouble(),
+        fuelExpense: workSession.fuelExpense,
+        income: workSession.income,
+        order: workSession.order,
+      );
     } catch (e) {
       _state = _state.copyWith(
         isLoading: false,

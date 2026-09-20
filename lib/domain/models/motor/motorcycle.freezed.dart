@@ -11,30 +11,33 @@ part of 'motorcycle.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$Motorcycle {
 
- int get id; String get brand; String get model; String get year; String get transmission; String get policeNumber; int get kilometers; int get avgKilometersPerDay; int get userId; DateTime? get lastServiceDate; String? get motorUrl;
+ int get id; String get brand; String get model; String get year; String get transmission;@JsonKey(name: 'police_number') String get policeNumber; int get kilometers;@JsonKey(name: 'avg_kilometers_per_day') int get avgKilometersPerDay;@JsonKey(name: 'user_id') int get userId;@JsonKey(name: 'last_service_date') DateTime? get lastServiceDate; String? get status;@JsonKey(name: 'motor_url') String? get motorUrl;
 /// Create a copy of Motorcycle
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $MotorcycleCopyWith<Motorcycle> get copyWith => _$MotorcycleCopyWithImpl<Motorcycle>(this as Motorcycle, _$identity);
 
+  /// Serializes this Motorcycle to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Motorcycle&&(identical(other.id, id) || other.id == id)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.model, model) || other.model == model)&&(identical(other.year, year) || other.year == year)&&(identical(other.transmission, transmission) || other.transmission == transmission)&&(identical(other.policeNumber, policeNumber) || other.policeNumber == policeNumber)&&(identical(other.kilometers, kilometers) || other.kilometers == kilometers)&&(identical(other.avgKilometersPerDay, avgKilometersPerDay) || other.avgKilometersPerDay == avgKilometersPerDay)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastServiceDate, lastServiceDate) || other.lastServiceDate == lastServiceDate)&&(identical(other.motorUrl, motorUrl) || other.motorUrl == motorUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Motorcycle&&(identical(other.id, id) || other.id == id)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.model, model) || other.model == model)&&(identical(other.year, year) || other.year == year)&&(identical(other.transmission, transmission) || other.transmission == transmission)&&(identical(other.policeNumber, policeNumber) || other.policeNumber == policeNumber)&&(identical(other.kilometers, kilometers) || other.kilometers == kilometers)&&(identical(other.avgKilometersPerDay, avgKilometersPerDay) || other.avgKilometersPerDay == avgKilometersPerDay)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastServiceDate, lastServiceDate) || other.lastServiceDate == lastServiceDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.motorUrl, motorUrl) || other.motorUrl == motorUrl));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,brand,model,year,transmission,policeNumber,kilometers,avgKilometersPerDay,userId,lastServiceDate,motorUrl);
+int get hashCode => Object.hash(runtimeType,id,brand,model,year,transmission,policeNumber,kilometers,avgKilometersPerDay,userId,lastServiceDate,status,motorUrl);
 
 @override
 String toString() {
-  return 'Motorcycle(id: $id, brand: $brand, model: $model, year: $year, transmission: $transmission, policeNumber: $policeNumber, kilometers: $kilometers, avgKilometersPerDay: $avgKilometersPerDay, userId: $userId, lastServiceDate: $lastServiceDate, motorUrl: $motorUrl)';
+  return 'Motorcycle(id: $id, brand: $brand, model: $model, year: $year, transmission: $transmission, policeNumber: $policeNumber, kilometers: $kilometers, avgKilometersPerDay: $avgKilometersPerDay, userId: $userId, lastServiceDate: $lastServiceDate, status: $status, motorUrl: $motorUrl)';
 }
 
 
@@ -45,7 +48,7 @@ abstract mixin class $MotorcycleCopyWith<$Res>  {
   factory $MotorcycleCopyWith(Motorcycle value, $Res Function(Motorcycle) _then) = _$MotorcycleCopyWithImpl;
 @useResult
 $Res call({
- int id, String brand, String model, String year, String transmission, String policeNumber, int kilometers, int avgKilometersPerDay, int userId, DateTime? lastServiceDate, String? motorUrl
+ int id, String brand, String model, String year, String transmission,@JsonKey(name: 'police_number') String policeNumber, int kilometers,@JsonKey(name: 'avg_kilometers_per_day') int avgKilometersPerDay,@JsonKey(name: 'user_id') int userId,@JsonKey(name: 'last_service_date') DateTime? lastServiceDate, String? status,@JsonKey(name: 'motor_url') String? motorUrl
 });
 
 
@@ -62,7 +65,7 @@ class _$MotorcycleCopyWithImpl<$Res>
 
 /// Create a copy of Motorcycle
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? brand = null,Object? model = null,Object? year = null,Object? transmission = null,Object? policeNumber = null,Object? kilometers = null,Object? avgKilometersPerDay = null,Object? userId = null,Object? lastServiceDate = freezed,Object? motorUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? brand = null,Object? model = null,Object? year = null,Object? transmission = null,Object? policeNumber = null,Object? kilometers = null,Object? avgKilometersPerDay = null,Object? userId = null,Object? lastServiceDate = freezed,Object? status = freezed,Object? motorUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,brand: null == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
@@ -74,7 +77,8 @@ as String,kilometers: null == kilometers ? _self.kilometers : kilometers // igno
 as int,avgKilometersPerDay: null == avgKilometersPerDay ? _self.avgKilometersPerDay : avgKilometersPerDay // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int,lastServiceDate: freezed == lastServiceDate ? _self.lastServiceDate : lastServiceDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,motorUrl: freezed == motorUrl ? _self.motorUrl : motorUrl // ignore: cast_nullable_to_non_nullable
+as DateTime?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,motorUrl: freezed == motorUrl ? _self.motorUrl : motorUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -160,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String brand,  String model,  String year,  String transmission,  String policeNumber,  int kilometers,  int avgKilometersPerDay,  int userId,  DateTime? lastServiceDate,  String? motorUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String brand,  String model,  String year,  String transmission, @JsonKey(name: 'police_number')  String policeNumber,  int kilometers, @JsonKey(name: 'avg_kilometers_per_day')  int avgKilometersPerDay, @JsonKey(name: 'user_id')  int userId, @JsonKey(name: 'last_service_date')  DateTime? lastServiceDate,  String? status, @JsonKey(name: 'motor_url')  String? motorUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Motorcycle() when $default != null:
-return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.motorUrl);case _:
+return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.status,_that.motorUrl);case _:
   return orElse();
 
 }
@@ -181,10 +185,10 @@ return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String brand,  String model,  String year,  String transmission,  String policeNumber,  int kilometers,  int avgKilometersPerDay,  int userId,  DateTime? lastServiceDate,  String? motorUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String brand,  String model,  String year,  String transmission, @JsonKey(name: 'police_number')  String policeNumber,  int kilometers, @JsonKey(name: 'avg_kilometers_per_day')  int avgKilometersPerDay, @JsonKey(name: 'user_id')  int userId, @JsonKey(name: 'last_service_date')  DateTime? lastServiceDate,  String? status, @JsonKey(name: 'motor_url')  String? motorUrl)  $default,) {final _that = this;
 switch (_that) {
 case _Motorcycle():
-return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.motorUrl);case _:
+return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.status,_that.motorUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +205,10 @@ return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String brand,  String model,  String year,  String transmission,  String policeNumber,  int kilometers,  int avgKilometersPerDay,  int userId,  DateTime? lastServiceDate,  String? motorUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String brand,  String model,  String year,  String transmission, @JsonKey(name: 'police_number')  String policeNumber,  int kilometers, @JsonKey(name: 'avg_kilometers_per_day')  int avgKilometersPerDay, @JsonKey(name: 'user_id')  int userId, @JsonKey(name: 'last_service_date')  DateTime? lastServiceDate,  String? status, @JsonKey(name: 'motor_url')  String? motorUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _Motorcycle() when $default != null:
-return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.motorUrl);case _:
+return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_that.policeNumber,_that.kilometers,_that.avgKilometersPerDay,_that.userId,_that.lastServiceDate,_that.status,_that.motorUrl);case _:
   return null;
 
 }
@@ -213,23 +217,24 @@ return $default(_that.id,_that.brand,_that.model,_that.year,_that.transmission,_
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _Motorcycle implements Motorcycle {
-  const _Motorcycle({required this.id, required this.brand, required this.model, required this.year, required this.transmission, required this.policeNumber, required this.kilometers, required this.avgKilometersPerDay, required this.userId, this.lastServiceDate, this.motorUrl});
-  
+  const _Motorcycle({required this.id, required this.brand, required this.model, required this.year, required this.transmission, @JsonKey(name: 'police_number') required this.policeNumber, required this.kilometers, @JsonKey(name: 'avg_kilometers_per_day') required this.avgKilometersPerDay, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'last_service_date') this.lastServiceDate, this.status, @JsonKey(name: 'motor_url') this.motorUrl});
+  factory _Motorcycle.fromJson(Map<String, dynamic> json) => _$MotorcycleFromJson(json);
 
 @override final  int id;
 @override final  String brand;
 @override final  String model;
 @override final  String year;
 @override final  String transmission;
-@override final  String policeNumber;
+@override@JsonKey(name: 'police_number') final  String policeNumber;
 @override final  int kilometers;
-@override final  int avgKilometersPerDay;
-@override final  int userId;
-@override final  DateTime? lastServiceDate;
-@override final  String? motorUrl;
+@override@JsonKey(name: 'avg_kilometers_per_day') final  int avgKilometersPerDay;
+@override@JsonKey(name: 'user_id') final  int userId;
+@override@JsonKey(name: 'last_service_date') final  DateTime? lastServiceDate;
+@override final  String? status;
+@override@JsonKey(name: 'motor_url') final  String? motorUrl;
 
 /// Create a copy of Motorcycle
 /// with the given fields replaced by the non-null parameter values.
@@ -237,20 +242,23 @@ class _Motorcycle implements Motorcycle {
 @pragma('vm:prefer-inline')
 _$MotorcycleCopyWith<_Motorcycle> get copyWith => __$MotorcycleCopyWithImpl<_Motorcycle>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$MotorcycleToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Motorcycle&&(identical(other.id, id) || other.id == id)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.model, model) || other.model == model)&&(identical(other.year, year) || other.year == year)&&(identical(other.transmission, transmission) || other.transmission == transmission)&&(identical(other.policeNumber, policeNumber) || other.policeNumber == policeNumber)&&(identical(other.kilometers, kilometers) || other.kilometers == kilometers)&&(identical(other.avgKilometersPerDay, avgKilometersPerDay) || other.avgKilometersPerDay == avgKilometersPerDay)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastServiceDate, lastServiceDate) || other.lastServiceDate == lastServiceDate)&&(identical(other.motorUrl, motorUrl) || other.motorUrl == motorUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Motorcycle&&(identical(other.id, id) || other.id == id)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.model, model) || other.model == model)&&(identical(other.year, year) || other.year == year)&&(identical(other.transmission, transmission) || other.transmission == transmission)&&(identical(other.policeNumber, policeNumber) || other.policeNumber == policeNumber)&&(identical(other.kilometers, kilometers) || other.kilometers == kilometers)&&(identical(other.avgKilometersPerDay, avgKilometersPerDay) || other.avgKilometersPerDay == avgKilometersPerDay)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.lastServiceDate, lastServiceDate) || other.lastServiceDate == lastServiceDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.motorUrl, motorUrl) || other.motorUrl == motorUrl));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,brand,model,year,transmission,policeNumber,kilometers,avgKilometersPerDay,userId,lastServiceDate,motorUrl);
+int get hashCode => Object.hash(runtimeType,id,brand,model,year,transmission,policeNumber,kilometers,avgKilometersPerDay,userId,lastServiceDate,status,motorUrl);
 
 @override
 String toString() {
-  return 'Motorcycle(id: $id, brand: $brand, model: $model, year: $year, transmission: $transmission, policeNumber: $policeNumber, kilometers: $kilometers, avgKilometersPerDay: $avgKilometersPerDay, userId: $userId, lastServiceDate: $lastServiceDate, motorUrl: $motorUrl)';
+  return 'Motorcycle(id: $id, brand: $brand, model: $model, year: $year, transmission: $transmission, policeNumber: $policeNumber, kilometers: $kilometers, avgKilometersPerDay: $avgKilometersPerDay, userId: $userId, lastServiceDate: $lastServiceDate, status: $status, motorUrl: $motorUrl)';
 }
 
 
@@ -261,7 +269,7 @@ abstract mixin class _$MotorcycleCopyWith<$Res> implements $MotorcycleCopyWith<$
   factory _$MotorcycleCopyWith(_Motorcycle value, $Res Function(_Motorcycle) _then) = __$MotorcycleCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String brand, String model, String year, String transmission, String policeNumber, int kilometers, int avgKilometersPerDay, int userId, DateTime? lastServiceDate, String? motorUrl
+ int id, String brand, String model, String year, String transmission,@JsonKey(name: 'police_number') String policeNumber, int kilometers,@JsonKey(name: 'avg_kilometers_per_day') int avgKilometersPerDay,@JsonKey(name: 'user_id') int userId,@JsonKey(name: 'last_service_date') DateTime? lastServiceDate, String? status,@JsonKey(name: 'motor_url') String? motorUrl
 });
 
 
@@ -278,7 +286,7 @@ class __$MotorcycleCopyWithImpl<$Res>
 
 /// Create a copy of Motorcycle
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? brand = null,Object? model = null,Object? year = null,Object? transmission = null,Object? policeNumber = null,Object? kilometers = null,Object? avgKilometersPerDay = null,Object? userId = null,Object? lastServiceDate = freezed,Object? motorUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? brand = null,Object? model = null,Object? year = null,Object? transmission = null,Object? policeNumber = null,Object? kilometers = null,Object? avgKilometersPerDay = null,Object? userId = null,Object? lastServiceDate = freezed,Object? status = freezed,Object? motorUrl = freezed,}) {
   return _then(_Motorcycle(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,brand: null == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
@@ -290,7 +298,8 @@ as String,kilometers: null == kilometers ? _self.kilometers : kilometers // igno
 as int,avgKilometersPerDay: null == avgKilometersPerDay ? _self.avgKilometersPerDay : avgKilometersPerDay // ignore: cast_nullable_to_non_nullable
 as int,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int,lastServiceDate: freezed == lastServiceDate ? _self.lastServiceDate : lastServiceDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,motorUrl: freezed == motorUrl ? _self.motorUrl : motorUrl // ignore: cast_nullable_to_non_nullable
+as DateTime?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,motorUrl: freezed == motorUrl ? _self.motorUrl : motorUrl // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

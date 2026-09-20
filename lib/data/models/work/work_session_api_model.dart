@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:motora/domain/models/motor/motorcycle.dart';
 import 'package:motora/domain/models/work/work_session.dart';
 
 part 'work_session_api_model.freezed.dart';
@@ -11,6 +12,8 @@ abstract class WorkSessionApiModel with _$WorkSessionApiModel {
 
     @JsonKey(name: 'motorcycle_id') required int motorcycleId,
 
+    required Motorcycle motorcycle,
+
     required String platform,
 
     @JsonKey(name: 'kilometers_start') required int kilometersStart,
@@ -21,17 +24,21 @@ abstract class WorkSessionApiModel with _$WorkSessionApiModel {
 
     @JsonKey(name: 'kilometers_finish') int? kilometersFinish,
 
-    @Default(0) int distance,
+    @JsonKey(name: 'total_expense') @Default(0) int expense,
 
-    @Default(0) int income,
+    @JsonKey(name: 'total_distance') @Default(0) int distance,
 
-    @JsonKey(name: 'total_order') @Default(0) int totalOrder,
+    @JsonKey(name: 'total_fuel') @Default(0) int fuelExpense,
+
+    @JsonKey(name: 'total_income') @Default(0) int income,
+
+    @JsonKey(name: 'total_order') @Default(0) int order,
 
     @JsonKey(name: 'status') @Default('ACTIVE') String status,
 
     @JsonKey(name: 'started_at') DateTime? startedAt,
 
-    @JsonKey(name: 'ended_at') DateTime? endedAt,
+    @JsonKey(name: 'finished_at') DateTime? finishedAt,
   }) = _WorkSessionApiModel;
 
   factory WorkSessionApiModel.fromJson(Map<String, dynamic> json) =>
@@ -47,12 +54,16 @@ extension WorkSessionApiModelMapper on WorkSessionApiModel {
       kilometersStart: kilometersStart,
       kilometersFinish: kilometersFinish,
       goalProfit: goalProfit,
+      expense: expense,
+      motorcycle: motorcycle,
       fuelCondition: fuelCondition,
+      fuelExpense: fuelExpense,
+      status: status,
       distance: distance,
       income: income,
-      totalOrder: totalOrder,
+      order: order,
       startedAt: startedAt,
-      endedAt: endedAt,
+      finishedAt: finishedAt,
     );
   }
 }

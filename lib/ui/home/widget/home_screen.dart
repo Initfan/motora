@@ -15,22 +15,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool isLoading = true;
-
-  double profitProgress(double profitTarget, double currentProfit) {
-    if (profitTarget <= 0) {
-      return 0;
-    }
-
-    return (currentProfit / profitTarget).clamp(0.0, 1.0);
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read<WorkSessionViewModel>().load();
-      setState(() => isLoading = false);
     });
   }
 
@@ -51,15 +40,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   return SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildHeader(),
-
+                      Image.asset(
+                        'assets/motocare_logo.png',
+                        width: 75,
+                        height: 75,
+                      ),
+                      // _buildHeader(),
                       const SizedBox(height: 20),
 
-                      MotorCard(),
+                      session != null
+                          ? Motor(data: session.motorcycle)
+                          : MotorCard(),
 
                       const SizedBox(height: 14),
 
-                      _buildProfitCard(session, model.state.currentIncome),
+                      _buildProfitCard(model),
 
                       const SizedBox(height: 14),
 
@@ -72,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 10),
 
                       _buildStats(session),
-
                       const SizedBox(height: 24),
 
                       _buildSectionTitle(
@@ -95,111 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    const String driverName = 'Initfan';
-
-    const String? profilePhoto = null;
-
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFFF0FDF4),
-            border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
-          ),
-          child: ClipOval(
-            child: profilePhoto != null && profilePhoto.isNotEmpty
-                ? Image.network(
-                    profilePhoto,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return _buildDefaultAvatar();
-                    },
-                  )
-                : _buildDefaultAvatar(),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                driverName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.dark,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
-                ),
-              ),
-
-              const SizedBox(height: 3),
-
-              const Text(
-                'Motocare',
-                style: TextStyle(
-                  color: AppColors.muted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Stack(
-            children: [
-              const Center(
-                child: Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.dark,
-                  size: 22,
-                ),
-              ),
-
-              Positioned(
-                top: 9,
-                right: 10,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppColors.green,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDefaultAvatar() {
-    return const Center(
-      child: Icon(Icons.person_rounded, color: AppColors.green, size: 27),
-    );
-  }
-
-  Widget _buildProfitCard(WorkSession? session, int currentProfit) {
-    if (isLoading || session == null) {
+  Widget _buildProfitCard(WorkSessionViewModel model) {
+    final session = model.state.workSession;
+    if (model.state.isLoading || session == null) {
       return Container(
         height: 180,
         width: double.infinity,
@@ -211,12 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final progress =
-        profitProgress(
-          session.goalProfit.toDouble(),
-          currentProfit.toDouble(),
-        ) *
-        100;
+    final progress = model.profitProgress * 100;
 
     return Container(
       width: double.infinity,
@@ -256,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 7),
 
           Text(
-            formatRupiah(currentProfit),
+            formatRupiah(session.income),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
@@ -281,8 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
-              value: 80,
-              // value: profitProgress,
+              value: model.profitProgress,
               minHeight: 8,
               backgroundColor: Colors.white24,
               valueColor: const AlwaysStoppedAnimation(Colors.white),
@@ -373,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.account_tree_outlined,
-                value: "${session?.totalOrder}",
+                value: "${session?.order}",
                 label: 'Order',
                 iconColor: const Color(0xFF4CAF50),
                 backgroundColor: const Color(0xFFF0FAF3),
@@ -385,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.access_time_rounded,
-                value: formatRupiah(100),
+                value: formatRupiah(session?.fuelExpense ?? 0),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
                 backgroundColor: const Color(0xFFFFF5EF),
@@ -401,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_gas_station_outlined,
-                value: formatRupiah(100),
+                value: formatRupiah(session?.expense ?? 0),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),
                 backgroundColor: const Color(0xFFF1F6FF),

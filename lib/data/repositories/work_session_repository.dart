@@ -17,8 +17,9 @@ class WorkSessionRepository {
     required int sessionId,
     required int amount,
     required double km,
+    required int order,
   }) async {
-    await service.saveIncome(sessionId, amount, km);
+    await service.saveIncome(sessionId, amount, km, order);
 
     return true;
   }
