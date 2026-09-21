@@ -13,6 +13,16 @@ class WorkSessionRepository {
     return apiModel.toDomain();
   }
 
+  Future<bool> addExpense({
+    required int sessionId,
+    required int amount,
+    required String description,
+  }) async {
+    await service.saveExpense(sessionId, amount, description);
+
+    return true;
+  }
+
   Future<bool> addIncome({
     required int sessionId,
     required int amount,

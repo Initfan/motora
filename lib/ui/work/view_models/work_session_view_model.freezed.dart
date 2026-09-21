@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WorkSessionUiState {
 
- bool get isLoading; String? get errorMessage; WorkSession? get workSession; int get fuelExpense; int get income; double get distance; int get order; Duration get duration;
+ bool get isLoading; String? get errorMessage; WorkSession? get workSession; int get fuelExpense; int get income; int get expense; double get distance; int get order; Duration get duration;
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $WorkSessionUiStateCopyWith<WorkSessionUiState> get copyWith => _$WorkSessionUiS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.fuelExpense, fuelExpense) || other.fuelExpense == fuelExpense)&&(identical(other.income, income) || other.income == income)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.order, order) || other.order == order)&&(identical(other.duration, duration) || other.duration == duration));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.fuelExpense, fuelExpense) || other.fuelExpense == fuelExpense)&&(identical(other.income, income) || other.income == income)&&(identical(other.expense, expense) || other.expense == expense)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.order, order) || other.order == order)&&(identical(other.duration, duration) || other.duration == duration));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,fuelExpense,income,distance,order,duration);
+int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,fuelExpense,income,expense,distance,order,duration);
 
 @override
 String toString() {
-  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, fuelExpense: $fuelExpense, income: $income, distance: $distance, order: $order, duration: $duration)';
+  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, fuelExpense: $fuelExpense, income: $income, expense: $expense, distance: $distance, order: $order, duration: $duration)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $WorkSessionUiStateCopyWith<$Res>  {
   factory $WorkSessionUiStateCopyWith(WorkSessionUiState value, $Res Function(WorkSessionUiState) _then) = _$WorkSessionUiStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, String? errorMessage, WorkSession? workSession, int fuelExpense, int income, double distance, int order, Duration duration
+ bool isLoading, String? errorMessage, WorkSession? workSession, int fuelExpense, int income, int expense, double distance, int order, Duration duration
 });
 
 
@@ -62,13 +62,14 @@ class _$WorkSessionUiStateCopyWithImpl<$Res>
 
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? fuelExpense = null,Object? income = null,Object? distance = null,Object? order = null,Object? duration = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? fuelExpense = null,Object? income = null,Object? expense = null,Object? distance = null,Object? order = null,Object? duration = null,}) {
   return _then(_self.copyWith(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,workSession: freezed == workSession ? _self.workSession : workSession // ignore: cast_nullable_to_non_nullable
 as WorkSession?,fuelExpense: null == fuelExpense ? _self.fuelExpense : fuelExpense // ignore: cast_nullable_to_non_nullable
 as int,income: null == income ? _self.income : income // ignore: cast_nullable_to_non_nullable
+as int,expense: null == expense ? _self.expense : expense // ignore: cast_nullable_to_non_nullable
 as int,distance: null == distance ? _self.distance : distance // ignore: cast_nullable_to_non_nullable
 as double,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
@@ -169,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  double distance,  int order,  Duration duration)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  int expense,  double distance,  int order,  Duration duration)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState() when $default != null:
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.distance,_that.order,_that.duration);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.expense,_that.distance,_that.order,_that.duration);case _:
   return orElse();
 
 }
@@ -190,10 +191,10 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelE
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  double distance,  int order,  Duration duration)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  int expense,  double distance,  int order,  Duration duration)  $default,) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState():
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.distance,_that.order,_that.duration);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.expense,_that.distance,_that.order,_that.duration);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +211,10 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelE
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  double distance,  int order,  Duration duration)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  String? errorMessage,  WorkSession? workSession,  int fuelExpense,  int income,  int expense,  double distance,  int order,  Duration duration)?  $default,) {final _that = this;
 switch (_that) {
 case _WorkSessionUiState() when $default != null:
-return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.distance,_that.order,_that.duration);case _:
+return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelExpense,_that.income,_that.expense,_that.distance,_that.order,_that.duration);case _:
   return null;
 
 }
@@ -225,7 +226,7 @@ return $default(_that.isLoading,_that.errorMessage,_that.workSession,_that.fuelE
 
 
 class _WorkSessionUiState implements WorkSessionUiState {
-  const _WorkSessionUiState({this.isLoading = false, this.errorMessage, this.workSession, this.fuelExpense = 0, this.income = 0, this.distance = 0, this.order = 0, this.duration = Duration.zero});
+  const _WorkSessionUiState({this.isLoading = false, this.errorMessage, this.workSession, this.fuelExpense = 0, this.income = 0, this.expense = 0, this.distance = 0, this.order = 0, this.duration = Duration.zero});
   
 
 @override@JsonKey() final  bool isLoading;
@@ -233,6 +234,7 @@ class _WorkSessionUiState implements WorkSessionUiState {
 @override final  WorkSession? workSession;
 @override@JsonKey() final  int fuelExpense;
 @override@JsonKey() final  int income;
+@override@JsonKey() final  int expense;
 @override@JsonKey() final  double distance;
 @override@JsonKey() final  int order;
 @override@JsonKey() final  Duration duration;
@@ -247,16 +249,16 @@ _$WorkSessionUiStateCopyWith<_WorkSessionUiState> get copyWith => __$WorkSession
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.fuelExpense, fuelExpense) || other.fuelExpense == fuelExpense)&&(identical(other.income, income) || other.income == income)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.order, order) || other.order == order)&&(identical(other.duration, duration) || other.duration == duration));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkSessionUiState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.workSession, workSession) || other.workSession == workSession)&&(identical(other.fuelExpense, fuelExpense) || other.fuelExpense == fuelExpense)&&(identical(other.income, income) || other.income == income)&&(identical(other.expense, expense) || other.expense == expense)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.order, order) || other.order == order)&&(identical(other.duration, duration) || other.duration == duration));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,fuelExpense,income,distance,order,duration);
+int get hashCode => Object.hash(runtimeType,isLoading,errorMessage,workSession,fuelExpense,income,expense,distance,order,duration);
 
 @override
 String toString() {
-  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, fuelExpense: $fuelExpense, income: $income, distance: $distance, order: $order, duration: $duration)';
+  return 'WorkSessionUiState(isLoading: $isLoading, errorMessage: $errorMessage, workSession: $workSession, fuelExpense: $fuelExpense, income: $income, expense: $expense, distance: $distance, order: $order, duration: $duration)';
 }
 
 
@@ -267,7 +269,7 @@ abstract mixin class _$WorkSessionUiStateCopyWith<$Res> implements $WorkSessionU
   factory _$WorkSessionUiStateCopyWith(_WorkSessionUiState value, $Res Function(_WorkSessionUiState) _then) = __$WorkSessionUiStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, String? errorMessage, WorkSession? workSession, int fuelExpense, int income, double distance, int order, Duration duration
+ bool isLoading, String? errorMessage, WorkSession? workSession, int fuelExpense, int income, int expense, double distance, int order, Duration duration
 });
 
 
@@ -284,13 +286,14 @@ class __$WorkSessionUiStateCopyWithImpl<$Res>
 
 /// Create a copy of WorkSessionUiState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? fuelExpense = null,Object? income = null,Object? distance = null,Object? order = null,Object? duration = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? errorMessage = freezed,Object? workSession = freezed,Object? fuelExpense = null,Object? income = null,Object? expense = null,Object? distance = null,Object? order = null,Object? duration = null,}) {
   return _then(_WorkSessionUiState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,workSession: freezed == workSession ? _self.workSession : workSession // ignore: cast_nullable_to_non_nullable
 as WorkSession?,fuelExpense: null == fuelExpense ? _self.fuelExpense : fuelExpense // ignore: cast_nullable_to_non_nullable
 as int,income: null == income ? _self.income : income // ignore: cast_nullable_to_non_nullable
+as int,expense: null == expense ? _self.expense : expense // ignore: cast_nullable_to_non_nullable
 as int,distance: null == distance ? _self.distance : distance // ignore: cast_nullable_to_non_nullable
 as double,order: null == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
 as int,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable

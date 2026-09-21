@@ -16,6 +16,7 @@ abstract class WorkSessionUiState with _$WorkSessionUiState {
     WorkSession? workSession,
     @Default(0) int fuelExpense,
     @Default(0) int income,
+    @Default(0) int expense,
     @Default(0) double distance,
     @Default(0) int order,
     @Default(Duration.zero) Duration duration,
@@ -77,8 +78,7 @@ class WorkSessionViewModel extends ChangeNotifier {
       return 0;
     }
 
-    return ((state.workSession?.income ?? 0) / state.workSession!.goalProfit)
-        .clamp(0.0, 1.0);
+    return (state.income / state.workSession!.goalProfit).clamp(0.0, 1.0);
   }
 
   String get formatKm {
@@ -87,6 +87,28 @@ class WorkSessionViewModel extends ChangeNotifier {
     }
 
     return state.distance.toStringAsFixed(1);
+  }
+
+  void addExpense(int amount, String description) async {
+    try {
+      await repository.addExpense(
+        sessionId: _state.workSession!.id,
+        amount: amount,
+        description: description,
+      );
+
+      _state = _state.copyWith(
+        expense: _state.expense + amount,
+        income: _state.income - amount,
+      );
+    } catch (e) {
+      print(e);
+      _state = _state.copyWith(
+        isLoading: false,
+        errorMessage: getErrorMessage(e),
+      );
+    }
+    notifyListeners();
   }
 
   void addIncome(int amount, double distance, int order) async {
@@ -125,6 +147,7 @@ class WorkSessionViewModel extends ChangeNotifier {
         workSession: workSession,
         distance: workSession.distance.toDouble(),
         fuelExpense: workSession.fuelExpense,
+        expense: workSession.expense,
         income: workSession.income,
         order: workSession.order,
       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:motora/domain/models/work/work_session.dart';
 import 'package:motora/ui/work/view_models/work_session_view_model.dart';
+import 'package:motora/ui/work/widget/expense_sheet.dart';
 import 'package:motora/ui/work/widget/income_sheet.dart';
 import 'package:motora/utils/colors.dart';
 import 'package:provider/provider.dart';
@@ -457,7 +458,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
 
             Expanded(
               child: _buildStatCard(
-                icon: Icons.access_time_rounded,
+                icon: Icons.local_gas_station_outlined,
                 value: _formatRupiah(0),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
@@ -473,8 +474,8 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                icon: Icons.local_gas_station_outlined,
-                value: _formatRupiah(0),
+                icon: Icons.access_time_rounded,
+                value: _formatRupiah(model.state.expense),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),
                 backgroundColor: const Color(0xFFF1F6FF),
@@ -565,15 +566,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
 
         const SizedBox(width: 8),
 
-        Expanded(
-          child: _buildQuickAction(
-            icon: Icons.payments_rounded,
-            title: 'Pengeluaran',
-            onTap: () {
-              // TODO: expense sheet
-            },
-          ),
-        ),
+        Expanded(child: ExpenseSheet(model: model)),
       ],
     );
   }

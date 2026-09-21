@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Expanded(
               child: _buildStatCard(
-                icon: Icons.access_time_rounded,
+                icon: Icons.local_gas_station_outlined,
                 value: formatRupiah(session?.fuelExpense ?? 0),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
@@ -286,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                icon: Icons.local_gas_station_outlined,
+                icon: Icons.access_time_rounded,
                 value: formatRupiah(session?.expense ?? 0),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),

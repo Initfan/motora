@@ -70,4 +70,28 @@ class WorkSessionApiService {
 
     return true;
   }
+
+  Future<bool> saveExpense(
+    int sessionId,
+    int amount,
+    String description,
+  ) async {
+    final res = await api.post(
+      '/work/expense',
+      body: {
+        "work_session_id": sessionId,
+        "expense_type": "OTHER",
+        "amount": amount,
+        "description": description,
+      },
+    );
+
+    final data = res['expense'];
+
+    if (data is! Map) {
+      throw const FormatException('Response save income tidak valid');
+    }
+
+    return true;
+  }
 }

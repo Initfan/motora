@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:motora/ui/core/widget/input.dart';
 import 'package:motora/ui/work/view_models/work_session_view_model.dart';
 import 'package:motora/utils/colors.dart';
 
@@ -62,110 +63,21 @@ class IncomeSheet extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                TextFormField(
-                  textInputAction: TextInputAction.next,
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    prefixText: 'Rp ',
-                    hintText: '0',
-                    filled: true,
-                    fillColor: const Color(0xFFF8F9FA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: AppColors.green,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Pendapatan wajib diisi';
-                    }
-
-                    return null;
-                  },
-                ),
+                Text("Argo"),
+                const SizedBox(height: 8),
+                Input(controller: controller),
 
                 const SizedBox(height: 16),
 
-                TextFormField(
-                  controller: kmController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    prefixText: 'KM ',
-                    hintText: '0',
-                    filled: true,
-                    fillColor: const Color(0xFFF8F9FA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: AppColors.green,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Kilometer wajib diisi';
-                    }
-
-                    return null;
-                  },
-                ),
+                Text("Jarak"),
+                const SizedBox(height: 8),
+                Input(controller: kmController, suffixText: "KM"),
 
                 const SizedBox(height: 16),
 
-                TextFormField(
-                  controller: order,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    prefixText: 'ORDER ',
-                    // hintText: '0s',
-                    filled: true,
-                    fillColor: const Color(0xFFF8F9FA),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: AppColors.green,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Order wajib diisi';
-                    }
-
-                    return null;
-                  },
-                ),
+                Text("Jumlah Order"),
+                const SizedBox(height: 8),
+                Input(controller: order),
 
                 const SizedBox(height: 16),
 
@@ -189,7 +101,6 @@ class IncomeSheet extends StatelessWidget {
                         double.parse(kmController.text),
                         int.parse(order.text),
                       );
-                      // saveIncome(value, double.parse(kmController.text));
 
                       Navigator.pop(context);
                     },
