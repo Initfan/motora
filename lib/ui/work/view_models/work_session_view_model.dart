@@ -89,7 +89,7 @@ class WorkSessionViewModel extends ChangeNotifier {
     return state.distance.toStringAsFixed(1);
   }
 
-  void addExpense(int amount, String description) async {
+  Future<void> addExpense(int amount, String description) async {
     try {
       await repository.addExpense(
         sessionId: _state.workSession!.id,
@@ -102,7 +102,6 @@ class WorkSessionViewModel extends ChangeNotifier {
         income: _state.income - amount,
       );
     } catch (e) {
-      print(e);
       _state = _state.copyWith(
         isLoading: false,
         errorMessage: getErrorMessage(e),
@@ -111,7 +110,30 @@ class WorkSessionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addIncome(int amount, double distance, int order) async {
+  Future<void> addFuel(int odometer, int liter, int price) async {
+    try {
+      await repository.addFuel(
+        sessionId: _state.workSession!.id,
+        motorcycleId: _state.workSession!.motorcycleId,
+        liter: liter,
+        odometer: odometer,
+        price: price,
+      );
+
+      _state = _state.copyWith(
+        fuelExpense: _state.fuelExpense + price,
+        income: _state.income - price,
+      );
+    } catch (e) {
+      _state = _state.copyWith(
+        isLoading: false,
+        errorMessage: getErrorMessage(e),
+      );
+    }
+    notifyListeners();
+  }
+
+  Future<void> addIncome(int amount, double distance, int order) async {
     try {
       await repository.addIncome(
         sessionId: _state.workSession!.id,

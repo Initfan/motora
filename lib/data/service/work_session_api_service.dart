@@ -94,4 +94,31 @@ class WorkSessionApiService {
 
     return true;
   }
+
+  Future<bool> addFuel(
+    int sessionId,
+    int motorcycleId,
+    int odometer,
+    int liter,
+    int price,
+  ) async {
+    final res = await api.post(
+      '/fuel',
+      body: {
+        "work_session_id": sessionId,
+        "motorcycle_id": motorcycleId,
+        "odometer": odometer,
+        "liters": liter,
+        "total_price": price,
+      },
+    );
+
+    final data = res['data'];
+
+    if (data is! Map) {
+      throw const FormatException('Response save income tidak valid');
+    }
+
+    return true;
+  }
 }

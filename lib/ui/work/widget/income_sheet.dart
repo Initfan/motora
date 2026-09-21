@@ -35,6 +35,19 @@ class IncomeSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
                 Row(
                   children: [
                     const Expanded(
@@ -96,7 +109,7 @@ class IncomeSheet extends StatelessWidget {
                         return;
                       }
 
-                      model.addIncome(
+                      await model.addIncome(
                         value,
                         double.parse(kmController.text),
                         int.parse(order.text),

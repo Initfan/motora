@@ -34,6 +34,19 @@ class ExpenseSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
                 Row(
                   children: [
                     const Expanded(
@@ -73,7 +86,7 @@ class ExpenseSheet extends StatelessWidget {
                     onPressed: () async {
                       if (!formKey.currentState!.validate()) return;
 
-                      model.addExpense(int.parse(amount.text), desc.text);
+                      await model.addExpense(int.parse(amount.text), desc.text);
 
                       Navigator.pop(context);
                     },

@@ -23,6 +23,18 @@ class WorkSessionRepository {
     return true;
   }
 
+  Future<bool> addFuel({
+    required int sessionId,
+    required int motorcycleId,
+    required int odometer,
+    required int liter,
+    required int price,
+  }) async {
+    await service.addFuel(sessionId, motorcycleId, odometer, liter, price);
+
+    return true;
+  }
+
   Future<bool> addIncome({
     required int sessionId,
     required int amount,

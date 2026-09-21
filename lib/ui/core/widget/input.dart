@@ -8,6 +8,8 @@ class Input extends StatelessWidget {
   final String? initialValue;
   final String? suffixText;
   final FormFieldValidator<String>? validator;
+  final TextInputType? keyboardType;
+  final Function(String value)? onChanged;
 
   const Input({
     super.key,
@@ -17,6 +19,8 @@ class Input extends StatelessWidget {
     this.initialValue,
     this.validator,
     this.suffixText,
+    this.keyboardType = const TextInputType.numberWithOptions(),
+    this.onChanged,
   });
 
   @override
@@ -24,9 +28,10 @@ class Input extends StatelessWidget {
     return TextFormField(
       textInputAction: TextInputAction.next,
       controller: controller,
-      keyboardType: TextInputType.number,
+      keyboardType: keyboardType,
       autofocus: autofocus,
       initialValue: initialValue,
+      onChanged: onChanged,
       decoration: InputDecoration(
         suffixText: suffixText,
         hintText: hintText,
