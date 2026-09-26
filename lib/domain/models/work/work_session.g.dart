@@ -20,7 +20,9 @@ _WorkSession _$WorkSessionFromJson(Map<String, dynamic> json) => _WorkSession(
   distance: (json['distance'] as num?)?.toInt() ?? 0,
   income: (json['income'] as num?)?.toInt() ?? 0,
   order: (json['order'] as num?)?.toInt() ?? 0,
-  motorcycle: Motorcycle.fromJson(json['motorcycle'] as Map<String, dynamic>),
+  motorcycle: json['motorcycle'] == null
+      ? null
+      : Motorcycle.fromJson(json['motorcycle'] as Map<String, dynamic>),
   startedAt: json['startedAt'] == null
       ? null
       : DateTime.parse(json['startedAt'] as String),

@@ -20,7 +20,7 @@ abstract class WorkSession with _$WorkSession {
     @Default(0) int distance,
     @Default(0) int income,
     @Default(0) int order,
-    required Motorcycle motorcycle,
+    Motorcycle? motorcycle,
     DateTime? startedAt,
     DateTime? finishedAt,
   }) = _WorkSession;

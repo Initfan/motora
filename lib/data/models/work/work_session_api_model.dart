@@ -12,7 +12,7 @@ abstract class WorkSessionApiModel with _$WorkSessionApiModel {
 
     @JsonKey(name: 'motorcycle_id') required int motorcycleId,
 
-    required Motorcycle motorcycle,
+    Motorcycle? motorcycle,
 
     required String platform,
 

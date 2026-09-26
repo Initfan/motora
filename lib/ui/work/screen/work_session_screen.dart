@@ -153,7 +153,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
               const SizedBox(width: 6),
 
               Text(
-                "${session.motorcycle.brand} ${session.motorcycle.model}",
+                "${session.motorcycle?.brand} ${session.motorcycle?.model}",
                 style: const TextStyle(
                   color: AppColors.dark,
                   fontSize: 14,
@@ -188,7 +188,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
           const SizedBox(height: 5),
 
           Text(
-            session.motorcycle.policeNumber,
+            "${session.motorcycle?.policeNumber}",
             style: const TextStyle(
               color: AppColors.muted,
               fontSize: 12,

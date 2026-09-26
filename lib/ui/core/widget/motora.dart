@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:motora/screen/activity.dart';
+import 'package:motora/ui/activity/screen/activity_screen.dart';
 import 'package:motora/ui/home/widget/home_screen.dart';
 import 'package:motora/screen/motor/motor.dart';
 import 'package:motora/screen/profile.dart';
 import 'package:motora/screen/report.dart';
 import 'package:motora/utils/colors.dart';
+
+List<Widget> get _pages {
+  return const [
+    HomeScreen(),
+    MotorPage(),
+    ActivityScreen(),
+    ReportPage(),
+    ProfilePage(),
+  ];
+}
 
 class Motora extends StatefulWidget {
   final int initialIndex;
@@ -30,16 +40,6 @@ class _MotoraState extends State<Motora> {
     setState(() {
       _currentIndex = index;
     });
-  }
-
-  List<Widget> get _pages {
-    return const [
-      HomeScreen(),
-      MotorPage(),
-      ActivityPage(),
-      ReportPage(),
-      ProfilePage(),
-    ];
   }
 
   @override

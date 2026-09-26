@@ -10,9 +10,9 @@ _WorkSessionApiModel _$WorkSessionApiModelFromJson(Map<String, dynamic> json) =>
     _WorkSessionApiModel(
       id: (json['id'] as num).toInt(),
       motorcycleId: (json['motorcycle_id'] as num).toInt(),
-      motorcycle: Motorcycle.fromJson(
-        json['motorcycle'] as Map<String, dynamic>,
-      ),
+      motorcycle: json['motorcycle'] == null
+          ? null
+          : Motorcycle.fromJson(json['motorcycle'] as Map<String, dynamic>),
       platform: json['platform'] as String,
       kilometersStart: (json['kilometers_start'] as num).toInt(),
       goalProfit: (json['goal_profit'] as num).toInt(),

@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       session == null
                           ? MotorCard()
-                          : Motor(data: session.motorcycle),
+                          : Motor(data: session.motorcycle!),
 
                       const SizedBox(height: 14),
 
