@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:motora/ui/motor/widget/motor_card.dart';
 import 'package:motora/domain/models/motor/motorcycle.dart';
 import 'package:motora/ui/motor/view_models/select_motor_view_model.dart';
@@ -24,7 +23,7 @@ class _SelectMotorScreenState extends State<SelectMotorScreen> {
         ),
         backgroundColor: Colors.transparent,
         leading: GestureDetector(
-          onTap: () => context.pushReplacement('/'),
+          onTap: () => Navigator.pushReplacementNamed(context, '/'),
           child: Icon(Icons.arrow_back),
         ),
       ),
@@ -127,7 +126,7 @@ class _SelectMotorScreenState extends State<SelectMotorScreen> {
 
   Widget _buildAddMotorButton() {
     return OutlinedButton.icon(
-      onPressed: () => context.go('/motor/add'),
+      onPressed: () => Navigator.pushNamed(context, '/motor/add'),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.dark,
         minimumSize: const Size(double.infinity, 52),

@@ -1,40 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:motora/components/card.dart';
 import 'package:motora/components/fuel_slider.dart';
+import 'package:motora/ui/core/widget/button.dart';
 import 'package:motora/ui/motor/view_models/select_motor_view_model.dart';
 import 'package:motora/ui/motor/widget/motor_card.dart';
 import 'package:motora/ui/work/view_models/start_work_view_model.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:motora/utils/format.dart';
 import 'package:provider/provider.dart';
-
-const platforms = [
-  _PlatformData(
-    name: 'GrabFood',
-    subtitle: 'Delivery makanan',
-    icon: Icons.restaurant_rounded,
-    color: Color(0xFF08A94F),
-  ),
-  _PlatformData(
-    name: 'ShopeeFood',
-    subtitle: 'Delivery makanan',
-    icon: Icons.shopping_bag_rounded,
-    color: Color(0xFFEE4D2D),
-  ),
-  _PlatformData(
-    name: 'Gojek',
-    subtitle: 'Transport & delivery',
-    icon: Icons.two_wheeler_rounded,
-    color: Color(0xFF00AA13),
-  ),
-  _PlatformData(
-    name: 'Lalamove',
-    subtitle: 'Delivery barang',
-    icon: Icons.local_shipping_rounded,
-    color: Color(0xFFFF6B00),
-  ),
-];
 
 class StartWorkScreen extends StatefulWidget {
   const StartWorkScreen({super.key});
@@ -51,21 +25,15 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StartWorkViewModel>();
-    });
-
     profitController.addListener(_formatProfit);
   }
 
   @override
   void dispose() {
+    super.dispose();
     profitController.removeListener(_formatProfit);
     profitController.dispose();
     profitFocusNode.dispose();
-
-    super.dispose();
   }
 
   void _formatProfit() {
@@ -81,7 +49,7 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
       return;
     }
 
-    final formatted = _formatRupiah(number);
+    final formatted = formatRupiah(number);
 
     if (profitController.text == formatted) {
       return;
@@ -98,24 +66,6 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
       context,
       listen: false,
     ).setTargetProfit(number);
-  }
-
-  String _formatRupiah(int value) {
-    final text = value.toString();
-
-    final buffer = StringBuffer();
-
-    for (int i = 0; i < text.length; i++) {
-      final positionFromEnd = text.length - i;
-
-      buffer.write(text[i]);
-
-      if (positionFromEnd > 1 && positionFromEnd % 3 == 1) {
-        buffer.write('.');
-      }
-    }
-
-    return buffer.toString();
   }
 
   int get targetProfit {
@@ -144,8 +94,10 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
             final motor = Provider.of<SelectMotorViewModel>(
               context,
               listen: false,
-            ).state.selectedMotorcycle!;
+            ).state.selectedMotorcycle;
             final state = model.state;
+
+            if (motor == null) return SizedBox();
 
             return Column(
               children: [
@@ -160,30 +112,22 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
 
                         const SizedBox(height: 13),
 
-                        _PlatformCard(
-                          selectedPlatform: state.selectedPlatform,
-                          onTap: () => _showPlatformPicker(model),
+                        _platformCard(model, state.selectedPlatform),
+
+                        const SizedBox(height: 13),
+
+                        FuelLevelSlider(
+                          value: state.fuelLevel,
+                          onChanged: (level) => model.setFuelLevel(level),
                         ),
 
                         const SizedBox(height: 13),
 
-                        CardMotora(
-                          child: FuelLevelSlider(
-                            value: state.fuelLevel,
-                            onChanged: (level) => model.setFuelLevel(level),
-                          ),
-                        ),
-
-                        const SizedBox(height: 13),
-
-                        _ProfitTargetCard(
-                          controller: profitController,
-                          focusNode: profitFocusNode,
-                        ),
+                        _profitTargetCard(),
 
                         const SizedBox(height: 16),
 
-                        const _TipCard(),
+                        _tipsCard(),
                       ],
                     ),
                   ),
@@ -195,34 +139,15 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
                   child: SizedBox(
                     width: double.infinity,
                     height: 46,
-                    child: ElevatedButton.icon(
+                    child: Button(
                       onPressed: () async {
-                        await model.repository.startSession(
-                          motorcycleId: motor.id,
-                          kilometersStart: motor.kilometers,
-                          platform: state.selectedPlatform,
-                          goalProfit: state.targetProfit,
-                          fuelCondition: "${state.fuelLevel.ceil()}%",
-                        );
-
-                        context.go('/work/active');
+                        final session = await model.startSession(motor);
+                        if (session != null)
+                          Navigator.pushNamed(context, '/work/active');
                       },
-                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                      label: const Text(
-                        'Mulai',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                      text: "Mulai",
+                      icon: Icons.play_arrow_rounded,
+                      isLoading: model.state.isStarting,
                     ),
                   ),
                 ),
@@ -239,7 +164,7 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       leading: GestureDetector(
-        onTap: () => context.push('/'),
+        onTap: () => Navigator.pushNamed(context, '/'),
         child: Icon(
           Icons.arrow_back_ios_new_rounded,
           size: 18,
@@ -311,15 +236,14 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
                 itemCount: platforms.length,
                 itemBuilder: (context, index) {
                   final platform = platforms[index];
-                  final isSelected =
-                      platform.name == model.state.selectedPlatform;
+                  final isSelected = platform == model.state.selectedPlatform;
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 9),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(13),
                       onTap: () {
-                        model.setPlatform(platform.name);
+                        model.setPlatform(platform);
                         Navigator.of(context).pop();
                       },
                       child: Container(
@@ -415,56 +339,13 @@ class _StartWorkScreenState extends State<StartWorkScreen> {
       ),
     );
   }
-}
 
-class _PlatformCard extends StatelessWidget {
-  final String selectedPlatform;
-  final VoidCallback onTap;
-
-  const _PlatformCard({required this.selectedPlatform, required this.onTap});
-
-  IconData get platformIcon {
-    switch (selectedPlatform) {
-      case 'GrabFood':
-        return Icons.restaurant_rounded;
-
-      case 'ShopeeFood':
-        return Icons.shopping_bag_rounded;
-
-      case 'Gojek':
-        return Icons.two_wheeler_rounded;
-
-      case 'Lalamove':
-        return Icons.local_shipping_rounded;
-
-      default:
-        return Icons.apps_rounded;
-    }
-  }
-
-  Color get platformColor {
-    switch (selectedPlatform) {
-      case 'GrabFood':
-        return const Color(0xFF08A94F);
-
-      case 'ShopeeFood':
-        return const Color(0xFFEE4D2D);
-
-      case 'Gojek':
-        return const Color(0xFF00AA13);
-
-      case 'Lalamove':
-        return const Color(0xFFFF6B00);
-
-      default:
-        return AppColors.green;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  InkWell _platformCard(
+    StartWorkViewModel model,
+    PlatformData selectedPlatform,
+  ) {
     return InkWell(
-      onTap: onTap,
+      onTap: () => _showPlatformPicker(model),
       borderRadius: BorderRadius.circular(15),
       child: CardMotora(
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 10),
@@ -488,16 +369,20 @@ class _PlatformCard extends StatelessWidget {
                   width: 35,
                   height: 35,
                   decoration: BoxDecoration(
-                    color: platformColor.withOpacity(.10),
+                    color: selectedPlatform.color.withOpacity(.10),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(platformIcon, size: 16, color: platformColor),
+                  child: Icon(
+                    selectedPlatform.icon,
+                    size: 16,
+                    color: selectedPlatform.color,
+                  ),
                 ),
 
                 const SizedBox(width: 9),
 
                 Text(
-                  selectedPlatform,
+                  selectedPlatform.name,
                   style: const TextStyle(
                     fontSize: 16,
                     color: AppColors.dark,
@@ -519,86 +404,8 @@ class _PlatformCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _ProfitTargetCard extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-
-  const _ProfitTargetCard({required this.controller, required this.focusNode});
-
-  @override
-  Widget build(BuildContext context) {
-    return CardMotora(
-      height: 105,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Target Profit',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.muted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(height: 7),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                'Rp',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: AppColors.dark,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-
-              const SizedBox(width: 7),
-
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: const TextStyle(
-                    fontSize: 25,
-                    color: AppColors.dark,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -.5,
-                  ),
-                  cursorColor: AppColors.green,
-                  decoration: const InputDecoration(
-                    hintText: '150.000',
-                    hintStyle: TextStyle(
-                      fontSize: 25,
-                      color: Color(0xFF98A2B3),
-                      fontWeight: FontWeight.w700,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TipCard extends StatelessWidget {
-  const _TipCard();
-
-  @override
-  Widget build(BuildContext context) {
+  Container _tipsCard() {
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: 92),
@@ -658,18 +465,58 @@ class _TipCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _PlatformData {
-  final String name;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
+  CardMotora _profitTargetCard() {
+    return CardMotora(
+      height: 105,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Target Profit',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.muted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
 
-  const _PlatformData({
-    required this.name,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
+          const SizedBox(height: 7),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: profitController,
+                  focusNode: profitFocusNode,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: const TextStyle(
+                    fontSize: 25,
+                    color: AppColors.dark,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.5,
+                  ),
+                  cursorColor: AppColors.green,
+                  decoration: const InputDecoration(
+                    hintText: '150.000',
+                    hintStyle: TextStyle(
+                      fontSize: 25,
+                      color: Color(0xFF98A2B3),
+                      fontWeight: FontWeight.w700,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

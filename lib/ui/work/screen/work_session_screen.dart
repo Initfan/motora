@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:motora/domain/models/work/work_session.dart';
 import 'package:motora/ui/work/view_models/work_session_view_model.dart';
 import 'package:motora/ui/work/widget/expense_sheet.dart';
@@ -63,7 +62,7 @@ class _ActiveWorkSessionPageState extends State<WorkSessionScreen> {
       elevation: 0,
 
       leading: IconButton(
-        onPressed: () => context.go('/'),
+        onPressed: () => Navigator.pushNamed(context, '/'),
         icon: const Icon(Icons.arrow_back_ios, color: AppColors.dark),
       ),
 

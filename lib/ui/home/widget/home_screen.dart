@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:motora/domain/models/work/work_session.dart';
 import 'package:motora/ui/motor/widget/motor_card.dart';
 import 'package:motora/ui/work/view_models/work_session_view_model.dart';
@@ -45,12 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 75,
                         height: 75,
                       ),
-                      // _buildHeader(),
                       const SizedBox(height: 20),
 
-                      session != null
-                          ? Motor(data: session.motorcycle)
-                          : MotorCard(),
+                      session == null
+                          ? MotorCard()
+                          : Motor(data: session.motorcycle),
 
                       const SizedBox(height: 14),
 
@@ -62,11 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       const SizedBox(height: 24),
 
-                      _buildSectionTitle('Hari ini'),
-
-                      const SizedBox(height: 10),
-
                       _buildStats(session),
+
                       const SizedBox(height: 24),
 
                       _buildSectionTitle(
@@ -91,18 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfitCard(WorkSessionViewModel model) {
     final session = model.state.workSession;
-    if (model.state.isLoading || session == null) {
-      return Container(
-        height: 180,
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.green,
-          borderRadius: BorderRadius.circular(20),
-        ),
-      );
-    }
-
     final progress = model.profitProgress * 100;
 
     return Container(
@@ -143,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 7),
 
           Text(
-            formatRupiah(session.income),
+            formatRupiah(session?.income ?? 0),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
@@ -155,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 4),
 
           Text(
-            'Target ${formatRupiah(session.goalProfit)}',
+            'Target ${formatRupiah(session?.goalProfit ?? 0)}',
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 12,
@@ -184,8 +167,9 @@ class _HomeScreenState extends State<HomeScreen> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () =>
-            session == null ? context.go('/work') : context.go('/work/active'),
+        onPressed: () => session == null
+            ? Navigator.pushNamed(context, '/work')
+            : Navigator.pushNamed(context, '/work/active'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.dark,
           foregroundColor: Colors.white,
@@ -252,14 +236,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStats(WorkSession? session) {
+    if (session == null) {
+      return SizedBox();
+    }
+
     return Column(
       children: [
+        _buildSectionTitle('Hari ini'),
+        SizedBox(height: 10),
         Row(
           children: [
             Expanded(
               child: _buildStatCard(
                 icon: Icons.account_tree_outlined,
-                value: "${session?.order}",
+                value: "${session.order}",
                 label: 'Order',
                 iconColor: const Color(0xFF4CAF50),
                 backgroundColor: const Color(0xFFF0FAF3),
@@ -271,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.local_gas_station_outlined,
-                value: formatRupiah(session?.fuelExpense ?? 0),
+                value: formatRupiah(session.fuelExpense),
                 label: 'Bensin',
                 iconColor: const Color(0xFFFF8A4C),
                 backgroundColor: const Color(0xFFFFF5EF),
@@ -287,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.access_time_rounded,
-                value: formatRupiah(session?.expense ?? 0),
+                value: formatRupiah(session.expense),
                 label: 'Pengeluaran',
                 iconColor: const Color(0xFF4285F4),
                 backgroundColor: const Color(0xFFF1F6FF),
@@ -299,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildStatCard(
                 icon: Icons.route_rounded,
-                value: '${formatNumber(session?.distance ?? 0)} km',
+                value: '${formatNumber(session.distance)} km',
                 label: 'Jarak',
                 iconColor: const Color(0xFF8B5CF6),
                 backgroundColor: const Color(0xFFF6F0FF),

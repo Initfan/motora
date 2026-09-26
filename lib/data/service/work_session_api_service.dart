@@ -121,4 +121,22 @@ class WorkSessionApiService {
 
     return true;
   }
+
+  Future<bool> finishSession(int sessionId, int kilometersFinish) async {
+    final res = await api.post(
+      '/fuel',
+      body: {
+        "work_session_id": sessionId,
+        "kilometers_finish": kilometersFinish,
+      },
+    );
+
+    final data = res['data'];
+
+    if (data is! Map) {
+      throw const FormatException('Response save income tidak valid');
+    }
+
+    return true;
+  }
 }

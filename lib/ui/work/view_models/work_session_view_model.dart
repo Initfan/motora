@@ -47,12 +47,12 @@ class WorkSessionViewModel extends ChangeNotifier {
   }
 
   void startTimer() {
-    final startedAt = state.workSession!.startedAt;
+    final startedAt = state.workSession?.startedAt ?? DateTime.now();
 
     _timer?.cancel();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _duration = DateTime.now().difference(startedAt!);
+      _duration = DateTime.now().difference(startedAt);
       notifyListeners();
     });
   }
@@ -74,7 +74,7 @@ class WorkSessionViewModel extends ChangeNotifier {
   }
 
   double get profitProgress {
-    if (state.workSession!.goalProfit <= 0) {
+    if (state.workSession == null) {
       return 0;
     }
 

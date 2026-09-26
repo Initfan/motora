@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$StartWorkUiState implements DiagnosticableTreeMixin {
 
- String get selectedPlatform; double get fuelLevel; int get targetProfit; bool get isStarting; Motorcycle? get motorcycle; WorkSession? get workSession; String? get errorMessage;
+ PlatformData get selectedPlatform; double get fuelLevel; int get targetProfit; bool get isStarting; Motorcycle? get motorcycle; WorkSession? get workSession; String? get errorMessage;
 /// Create a copy of StartWorkUiState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -51,7 +51,7 @@ abstract mixin class $StartWorkUiStateCopyWith<$Res>  {
   factory $StartWorkUiStateCopyWith(StartWorkUiState value, $Res Function(StartWorkUiState) _then) = _$StartWorkUiStateCopyWithImpl;
 @useResult
 $Res call({
- String selectedPlatform, double fuelLevel, int targetProfit, bool isStarting, Motorcycle? motorcycle, WorkSession? workSession, String? errorMessage
+ PlatformData selectedPlatform, double fuelLevel, int targetProfit, bool isStarting, Motorcycle? motorcycle, WorkSession? workSession, String? errorMessage
 });
 
 
@@ -71,7 +71,7 @@ class _$StartWorkUiStateCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? selectedPlatform = null,Object? fuelLevel = null,Object? targetProfit = null,Object? isStarting = null,Object? motorcycle = freezed,Object? workSession = freezed,Object? errorMessage = freezed,}) {
   return _then(_self.copyWith(
 selectedPlatform: null == selectedPlatform ? _self.selectedPlatform : selectedPlatform // ignore: cast_nullable_to_non_nullable
-as String,fuelLevel: null == fuelLevel ? _self.fuelLevel : fuelLevel // ignore: cast_nullable_to_non_nullable
+as PlatformData,fuelLevel: null == fuelLevel ? _self.fuelLevel : fuelLevel // ignore: cast_nullable_to_non_nullable
 as double,targetProfit: null == targetProfit ? _self.targetProfit : targetProfit // ignore: cast_nullable_to_non_nullable
 as int,isStarting: null == isStarting ? _self.isStarting : isStarting // ignore: cast_nullable_to_non_nullable
 as bool,motorcycle: freezed == motorcycle ? _self.motorcycle : motorcycle // ignore: cast_nullable_to_non_nullable
@@ -186,7 +186,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( PlatformData selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StartWorkUiState() when $default != null:
 return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.isStarting,_that.motorcycle,_that.workSession,_that.errorMessage);case _:
@@ -207,7 +207,7 @@ return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( PlatformData selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)  $default,) {final _that = this;
 switch (_that) {
 case _StartWorkUiState():
 return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.isStarting,_that.motorcycle,_that.workSession,_that.errorMessage);case _:
@@ -227,7 +227,7 @@ return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( PlatformData selectedPlatform,  double fuelLevel,  int targetProfit,  bool isStarting,  Motorcycle? motorcycle,  WorkSession? workSession,  String? errorMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _StartWorkUiState() when $default != null:
 return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.isStarting,_that.motorcycle,_that.workSession,_that.errorMessage);case _:
@@ -242,10 +242,10 @@ return $default(_that.selectedPlatform,_that.fuelLevel,_that.targetProfit,_that.
 
 
 class _StartWorkUiState with DiagnosticableTreeMixin implements StartWorkUiState {
-  const _StartWorkUiState({this.selectedPlatform = 'GrabFood', this.fuelLevel = 0, this.targetProfit = 0, this.isStarting = false, this.motorcycle, this.workSession, this.errorMessage});
+  const _StartWorkUiState({this.selectedPlatform = const PlatformData(name: 'Grab', subtitle: 'Transport & delivery', icon: Icons.two_wheeler_rounded, color: Color(0xFF08A94F)), this.fuelLevel = 0, this.targetProfit = 0, this.isStarting = false, this.motorcycle, this.workSession, this.errorMessage});
   
 
-@override@JsonKey() final  String selectedPlatform;
+@override@JsonKey() final  PlatformData selectedPlatform;
 @override@JsonKey() final  double fuelLevel;
 @override@JsonKey() final  int targetProfit;
 @override@JsonKey() final  bool isStarting;
@@ -289,7 +289,7 @@ abstract mixin class _$StartWorkUiStateCopyWith<$Res> implements $StartWorkUiSta
   factory _$StartWorkUiStateCopyWith(_StartWorkUiState value, $Res Function(_StartWorkUiState) _then) = __$StartWorkUiStateCopyWithImpl;
 @override @useResult
 $Res call({
- String selectedPlatform, double fuelLevel, int targetProfit, bool isStarting, Motorcycle? motorcycle, WorkSession? workSession, String? errorMessage
+ PlatformData selectedPlatform, double fuelLevel, int targetProfit, bool isStarting, Motorcycle? motorcycle, WorkSession? workSession, String? errorMessage
 });
 
 
@@ -309,7 +309,7 @@ class __$StartWorkUiStateCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? selectedPlatform = null,Object? fuelLevel = null,Object? targetProfit = null,Object? isStarting = null,Object? motorcycle = freezed,Object? workSession = freezed,Object? errorMessage = freezed,}) {
   return _then(_StartWorkUiState(
 selectedPlatform: null == selectedPlatform ? _self.selectedPlatform : selectedPlatform // ignore: cast_nullable_to_non_nullable
-as String,fuelLevel: null == fuelLevel ? _self.fuelLevel : fuelLevel // ignore: cast_nullable_to_non_nullable
+as PlatformData,fuelLevel: null == fuelLevel ? _self.fuelLevel : fuelLevel // ignore: cast_nullable_to_non_nullable
 as double,targetProfit: null == targetProfit ? _self.targetProfit : targetProfit // ignore: cast_nullable_to_non_nullable
 as int,isStarting: null == isStarting ? _self.isStarting : isStarting // ignore: cast_nullable_to_non_nullable
 as bool,motorcycle: freezed == motorcycle ? _self.motorcycle : motorcycle // ignore: cast_nullable_to_non_nullable

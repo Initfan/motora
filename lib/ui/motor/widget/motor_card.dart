@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:go_router/go_router.dart';
 import 'package:motora/components/card.dart';
 import 'package:motora/domain/models/motor/motorcycle.dart';
 import 'package:motora/ui/motor/view_models/select_motor_view_model.dart';
@@ -36,7 +35,7 @@ class _MotorCardState extends State<MotorCard> {
 
         if (state.selectedMotorcycle != null) {
           return GestureDetector(
-            onTap: () => context.push('/motor'),
+            onTap: () => Navigator.pushNamed(context, '/motor'),
             child: Motor(data: state.selectedMotorcycle!, icon: true),
           );
         }

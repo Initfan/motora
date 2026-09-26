@@ -15,8 +15,9 @@ class MotoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: router,
+    return MaterialApp(
+      routes: router,
+      // routerConfig: RouterConfig(routerDelegate: routerDelegate),
       debugShowCheckedModeBanner: false,
       title: 'MotoCare Driver',
       builder: (context, child) {
