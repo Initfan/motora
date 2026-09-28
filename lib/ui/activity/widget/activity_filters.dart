@@ -20,8 +20,7 @@ class ActivityFilters extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 7),
         itemBuilder: (context, index) {
           final filter = ranges[index];
-          final isSelected =
-              ranges[index].label == model.state.selectedFilter?.label;
+          final isSelected = filter.label == model.state.selectedFilter?.label;
 
           return GestureDetector(
             onTap: () => model.selectFilter(filter),

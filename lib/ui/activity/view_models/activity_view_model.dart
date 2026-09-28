@@ -39,9 +39,9 @@ class ActivityViewModel extends ChangeNotifier {
       return [];
     }
 
-    if (state.selectedFilter == 'Semua') {
-      return state.activities;
-    }
+    // if (state.selectedFilter == ) {
+    //   return state.activities;
+    // }
 
     return state.activities!
         .where((item) => item.status == state.selectedFilter)
@@ -51,7 +51,7 @@ class ActivityViewModel extends ChangeNotifier {
   void selectFilter(WeekRange value) {
     _state = _state.copyWith(selectedFilter: value);
     notifyListeners();
-    load(value.from);
+    load(value);
   }
 
   String formatTime(DateTime date) => "${date.hour}:${date.minute}";
@@ -63,21 +63,18 @@ class ActivityViewModel extends ChangeNotifier {
 
   String formatDistance(int distance) => "$distance km";
 
-  dynamic load(DateTime startDate) async {
+  dynamic load(WeekRange? startDate) async {
     _state = _state.copyWith(isLoading: true);
     notifyListeners();
 
     try {
-      final today = startDate;
+      final week = startDate ?? generateWeekRanges()[0];
 
-      final to = DateTime(today.year, today.month, today.day);
-
-      final from = to.subtract(const Duration(days: 6));
-
-      final data = await repository.getWorkActivities(from, to);
+      final data = await repository.getWorkActivities(week.from, week.to);
 
       if (data is List && data!.isNotEmpty) {
         return _state = _state.copyWith(
+          selectedFilter: week,
           totalActivities: data.length,
           activities: data.whereType<WorkSession>().map((e) {
             final platform = platforms.firstWhere((p) => p.name == e.platform);
@@ -98,7 +95,9 @@ class ActivityViewModel extends ChangeNotifier {
         );
       }
 
-      _state = _state.copyWith(activities: []);
+      _state = _state.copyWith(activities: [], selectedFilter: week);
+    } catch (e) {
+      print(e);
     } finally {
       _state = _state.copyWith(isLoading: false);
       notifyListeners();

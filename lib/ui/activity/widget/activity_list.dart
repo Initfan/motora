@@ -13,7 +13,11 @@ class ActivityList extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = model.state.activities;
 
-    if (items == null) {
+    if (model.state.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (items == null || items.isEmpty && !model.state.isLoading) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 50),
         alignment: Alignment.center,

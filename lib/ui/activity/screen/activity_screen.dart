@@ -18,7 +18,7 @@ class _ActivitiyScreen extends State<ActivityScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ActivityViewModel>().load(DateTime.now());
+      context.read<ActivityViewModel>().load(null);
     });
   }
 
@@ -37,6 +37,13 @@ class _ActivitiyScreen extends State<ActivityScreen> {
                   sliver: SliverToBoxAdapter(child: _buildHeader()),
                 ),
 
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: ActivityFilters(model: model),
+                  ),
+                ),
+
                 model.state.isLoading || model.state.activities == null
                     ? SliverToBoxAdapter()
                     : SliverPadding(
@@ -50,12 +57,6 @@ class _ActivitiyScreen extends State<ActivityScreen> {
                         ),
                       ),
 
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: ActivityFilters(model: model),
-                  ),
-                ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 25),
                   sliver: SliverToBoxAdapter(child: ActivityList(model: model)),
