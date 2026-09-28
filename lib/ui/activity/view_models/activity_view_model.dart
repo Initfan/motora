@@ -5,6 +5,7 @@ import 'package:motora/data/repositories/activity_repository.dart';
 import 'package:motora/domain/models/activity/activity.dart';
 import 'package:motora/domain/models/work/work_session.dart';
 import 'package:motora/ui/work/view_models/start_work_view_model.dart';
+import 'package:motora/utils/format.dart';
 
 part 'activity_view_model.freezed.dart';
 
@@ -39,10 +40,6 @@ class ActivityViewModel extends ChangeNotifier {
       return [];
     }
 
-    // if (state.selectedFilter == ) {
-    //   return state.activities;
-    // }
-
     return state.activities!
         .where((item) => item.status == state.selectedFilter)
         .toList();
@@ -53,15 +50,6 @@ class ActivityViewModel extends ChangeNotifier {
     notifyListeners();
     load(value);
   }
-
-  String formatTime(DateTime date) => "${date.hour}:${date.minute}";
-
-  String formatDuration(DateTime start, DateTime end) {
-    final duration = end.difference(start);
-    return "${duration.inHours}j ${duration.inMinutes.toString().substring(0, 2)}m";
-  }
-
-  String formatDistance(int distance) => "$distance km";
 
   dynamic load(WeekRange? startDate) async {
     _state = _state.copyWith(isLoading: true);

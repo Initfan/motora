@@ -8,3 +8,12 @@ String formatNumber(num value) {
     (match) => '.',
   );
 }
+
+String formatTime(DateTime date) => "${date.hour}:${date.minute}";
+
+String formatDuration(DateTime start, DateTime end) {
+  final duration = end.difference(start);
+  return "${duration.inHours}j ${duration.inMinutes.toString().substring(0, 2)}m";
+}
+
+String formatDistance(int distance) => "$distance km";

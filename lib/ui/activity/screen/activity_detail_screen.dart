@@ -1,50 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:motora/domain/models/activity/activity.dart';
 import 'package:motora/utils/colors.dart';
+import 'package:motora/utils/format.dart';
 
-class SessionDetailPage extends StatelessWidget {
-  final String date;
-  final String time;
-  final String platform;
-  final String status;
-  final int orders;
-  final String duration;
-  final String income;
-  final String distance;
+class ActivityDetailScreen extends StatelessWidget {
+  final Activity activity;
 
-  const SessionDetailPage({
-    super.key,
-    this.date = 'Hari ini',
-    this.time = '08:15 - 13:42',
-    this.platform = 'GrabFood',
-    this.status = 'Selesai',
-    this.orders = 18,
-    this.duration = '5j 27m',
-    this.income = 'Rp186.500',
-    this.distance = '74,2 km',
-  });
+  const ActivityDetailScreen({super.key, required this.activity});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8FAF9),
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.dark,
-            size: 20,
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.dark, size: 20),
         ),
-        title: const Text(
-          'Detail Sesi',
-          style: TextStyle(
-            color: AppColors.dark,
-            fontSize: 19,
-            fontWeight: FontWeight.w800,
-          ),
+        title: Text(
+          'Detail aktivitas',
+          style: TextStyle(fontSize: 20, color: AppColors.dark),
         ),
       ),
       body: SafeArea(
@@ -79,10 +55,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // HEADER
-  // ============================================================
-
   Widget _buildHeaderCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -112,7 +84,7 @@ class SessionDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            platform,
+            activity.platform,
             style: const TextStyle(
               color: AppColors.dark,
               fontSize: 19,
@@ -123,7 +95,7 @@ class SessionDetailPage extends StatelessWidget {
           const SizedBox(height: 4),
 
           Text(
-            '$date • $time',
+            '${activity.date} • ${activity.time}',
             style: const TextStyle(color: AppColors.muted, fontSize: 12),
           ),
 
@@ -145,7 +117,7 @@ class SessionDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  status,
+                  activity.status,
                   style: const TextStyle(
                     color: AppColors.green,
                     fontSize: 11,
@@ -170,7 +142,7 @@ class SessionDetailPage extends StatelessWidget {
           const SizedBox(height: 5),
 
           Text(
-            income,
+            formatRupiah(activity.income),
             style: const TextStyle(
               color: AppColors.green,
               fontSize: 29,
@@ -182,10 +154,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // SESSION INFO
-  // ============================================================
-
   Widget _buildSessionInfo() {
     return _SectionCard(
       title: 'Ringkasan Sesi',
@@ -196,7 +164,7 @@ class SessionDetailPage extends StatelessWidget {
               Expanded(
                 child: _MetricBox(
                   icon: Icons.receipt_long_rounded,
-                  value: '$orders',
+                  value: '${activity.orders}',
                   label: 'Total Order',
                 ),
               ),
@@ -204,7 +172,7 @@ class SessionDetailPage extends StatelessWidget {
               Expanded(
                 child: _MetricBox(
                   icon: Icons.access_time_rounded,
-                  value: duration,
+                  value: formatDuration(activity.date, DateTime.now()),
                   label: 'Durasi',
                 ),
               ),
@@ -218,7 +186,7 @@ class SessionDetailPage extends StatelessWidget {
               Expanded(
                 child: _MetricBox(
                   icon: Icons.route_rounded,
-                  value: distance,
+                  value: formatDistance(activity.distance),
                   label: 'Jarak',
                 ),
               ),
@@ -237,10 +205,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // INCOME
-  // ============================================================
-
   Widget _buildIncomeBreakdown() {
     return _SectionCard(
       title: 'Pendapatan',
@@ -252,7 +216,7 @@ class SessionDetailPage extends StatelessWidget {
           const Divider(height: 22, color: Color(0xFFEDEFF1)),
           _MoneyRow(
             title: 'Total Pendapatan',
-            value: income,
+            value: formatRupiah(activity.income),
             isTotal: true,
             valueColor: AppColors.green,
           ),
@@ -260,10 +224,6 @@ class SessionDetailPage extends StatelessWidget {
       ),
     );
   }
-
-  // ============================================================
-  // COST
-  // ============================================================
 
   Widget _buildOperationalCost() {
     return _SectionCard(
@@ -297,10 +257,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // ORDERS
-  // ============================================================
-
   Widget _buildOrderList(BuildContext context) {
     final ordersData = [
       {
@@ -332,7 +288,7 @@ class SessionDetailPage extends StatelessWidget {
     return _SectionCard(
       title: 'Order Terbaru',
       trailing: Text(
-        '$orders order',
+        '${activity.orders} order',
         style: const TextStyle(
           color: AppColors.muted,
           fontSize: 11,
@@ -369,10 +325,6 @@ class SessionDetailPage extends StatelessWidget {
       ),
     );
   }
-
-  // ============================================================
-  // PROFIT
-  // ============================================================
 
   Widget _buildProfitCard() {
     return Container(
@@ -448,10 +400,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // SHOW ALL ORDERS
-  // ============================================================
-
   void _showAllOrders(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -463,10 +411,6 @@ class SessionDetailPage extends StatelessWidget {
     );
   }
 }
-
-// ================================================================
-// SECTION CARD
-// ================================================================
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -510,10 +454,6 @@ class _SectionCard extends StatelessWidget {
     );
   }
 }
-
-// ================================================================
-// METRIC BOX
-// ================================================================
 
 class _MetricBox extends StatelessWidget {
   final IconData icon;
@@ -568,10 +508,6 @@ class _MetricBox extends StatelessWidget {
   }
 }
 
-// ================================================================
-// MONEY ROW
-// ================================================================
-
 class _MoneyRow extends StatelessWidget {
   final String title;
   final String value;
@@ -614,10 +550,6 @@ class _MoneyRow extends StatelessWidget {
     );
   }
 }
-
-// ================================================================
-// ORDER ITEM
-// ================================================================
 
 class _OrderItem extends StatelessWidget {
   final String time;
@@ -704,10 +636,6 @@ class _OrderItem extends StatelessWidget {
     );
   }
 }
-
-// ================================================================
-// ALL ORDERS SHEET
-// ================================================================
 
 class _AllOrdersSheet extends StatelessWidget {
   const _AllOrdersSheet();

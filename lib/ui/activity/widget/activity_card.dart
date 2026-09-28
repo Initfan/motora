@@ -130,7 +130,7 @@ class ActivityCard extends StatelessWidget {
                   Expanded(
                     child: ActivityStat(
                       icon: Icons.route_outlined,
-                      value: model.formatDistance(item.distance),
+                      value: formatDistance(item.distance),
                       label: 'Jarak',
                     ),
                   ),

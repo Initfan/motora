@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-// import 'package:motora/screen/activity/session_detail_page.dart';
+import 'package:motora/ui/activity/screen/activity_detail_screen.dart';
 import 'package:motora/ui/activity/view_models/activity_view_model.dart';
 import 'package:motora/ui/activity/widget/activity_card.dart';
 import 'package:motora/utils/colors.dart';
@@ -61,21 +61,12 @@ class ActivityList extends StatelessWidget {
               child: ActivityCard(
                 model: model,
                 item: item,
-                onTap: () {},
-                // onTap: () => Navigator.of(context).push(
-                //   MaterialPageRoute(
-                //     builder: (_) => SessionDetailPage(
-                //       date: item.date,
-                //       time: item.time,
-                //       platform: item.platform,
-                //       status: item.status,
-                //       orders: item.orders,
-                //       duration: item.duration,
-                //       income: item.income,
-                //       distance: item.distance,
-                //     ),
-                //   ),
-                // ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ActivityDetailScreen(activity: item),
+                  ),
+                ),
               ),
             ),
           ],
